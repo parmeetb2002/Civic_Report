@@ -16,7 +16,8 @@ function Login() {
       login(res.data);
     } catch (err) {
       console.error(err);
-      setError('Failed to authenticate with backend.');
+      const msg = err.response?.data?.details || err.response?.data?.error || 'Failed to authenticate with backend.';
+      setError(`Auth Error: ${msg}`);
     }
   };
 

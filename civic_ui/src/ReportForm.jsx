@@ -24,7 +24,7 @@ function MapUpdater({ center }) {
 }
 
 function ReportForm() {
-  const { auth } = useContext(AuthContext);
+  const { auth, isHydrating } = useContext(AuthContext);
   const [imageFile, setImageFile] = useState(null);
   const [location, setLocation] = useState({ lat: 28.3670, lon: 79.4304 }); // Default Bareilly
   const [hasDetected, setHasDetected] = useState(false);
@@ -97,6 +97,14 @@ function ReportForm() {
       setStatusMsg('Report discarded.');
     }
   };
+
+  if (isHydrating) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-surface">
+        <span className="material-symbols-outlined animate-spin text-primary/30 text-4xl">refresh</span>
+      </div>
+    );
+  }
 
   if (!auth?.user) {
     return (

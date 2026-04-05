@@ -4,7 +4,7 @@ import { AuthContext } from './AuthContext';
 import { Link } from 'react-router-dom';
 
 function MyReports() {
-  const { auth } = useContext(AuthContext);
+  const { auth, isHydrating } = useContext(AuthContext);
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -26,6 +26,14 @@ function MyReports() {
       fetchMyReports();
     }
   }, [auth]);
+
+  if (isHydrating) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-surface">
+        <span className="material-symbols-outlined animate-spin text-primary/30 text-4xl">refresh</span>
+      </div>
+    );
+  }
 
   if (!auth?.user) {
     return (
@@ -90,7 +98,7 @@ function MyReports() {
         )}
       </main>
 
-      <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-8 pt-4 bg-white/80 backdrop-blur-xl rounded-t-3xl shadow-[0_-8px_30px_rgb(0,38,49,0.06)] z-50">
+      <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-8 pt-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-t-3xl shadow-[0_-8px_30px_rgb(0,38,49,0.06)] z-50">
         <Link to="/" className="flex flex-col items-center justify-center text-slate-400 p-2">
           <span className="material-symbols-outlined">add_circle</span>
           <span className="text-[10px] font-bold mt-1">Report</span>
