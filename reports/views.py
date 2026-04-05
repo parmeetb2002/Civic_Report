@@ -229,13 +229,14 @@ class ChatbotView(APIView):
         if not user_message:
             return Response({'error': 'No message provided'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Default to the primary GEMINI_API_KEY if CHATBOT_GEMINI_API_KEY is not explicitly set in the environment
-        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("CHATBOT_GEMINI_API_KEY", "")
+        # Prioritize the specific Chatbot API key if added in Render, otherwise fallback to the primary one
+        api_key = os.environ.get("CHATBOT_GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY", "")
         
         if not api_key:
             return Response({'reply': 'API key configuration missing on server.'}, status=status.HTTP_200_OK)
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+        # Reverting to gemini-2.0-flash as it was stable and working before the upgrade attempt
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
 
         try:
             # Build contents list for multi-turn conversation
