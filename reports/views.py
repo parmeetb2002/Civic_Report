@@ -7,6 +7,7 @@ from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from google.oauth2 import id_token
 from google.auth.transport import requests
+import requests as requests_lib
 import time
 
 from .models import Report
@@ -21,43 +22,51 @@ class GoogleLoginView(APIView):
         if not token:
             return Response({'error': 'No token provided'}, status=status.HTTP_400_BAD_REQUEST)
 
-        max_retries = 2
-        for attempt in range(max_retries):
+        try:
+            # 1. Try to verify as ID Token (GoogleLogin component)
             try:
-                # Verify the token with Google
                 idinfo = id_token.verify_oauth2_token(
                     token, requests.Request(), settings.GOOGLE_OAUTH2_CLIENT_ID
                 )
-                
-                email = idinfo['email']
-                first_name = idinfo.get('given_name', '')
-                last_name = idinfo.get('family_name', '')
+            except Exception:
+                # 2. Fallback: Try as Access Token (useGoogleLogin hook)
+                userinfo_res = requests_lib.get(
+                    'https://www.googleapis.com/oauth2/v3/userinfo',
+                    headers={'Authorization': f'Bearer {token}'}
+                )
+                if not userinfo_res.ok:
+                    return Response({'error': 'Invalid Google Token (Check origins)'}, status=status.HTTP_400_BAD_REQUEST)
+                idinfo = userinfo_res.json()
 
-                # Get or Create the user
-                user, created = User.objects.get_or_create(username=email, defaults={
-                    'email': email,
-                    'first_name': first_name,
-                    'last_name': last_name
-                })
+            email = idinfo['email']
+            first_name = idinfo.get('given_name', idinfo.get('name', ''))
+            last_name = idinfo.get('family_name', '')
 
-                # Issue JWT
-                refresh = RefreshToken.for_user(user)
-                
-                return Response({
-                    'access': str(refresh.access_token),
-                    'refresh': str(refresh),
-                    'user': {
-                        'email': user.email,
-                        'is_staff': user.is_staff
-                    }
-                })
+            # Get or Create the user
+            user, created = User.objects.get_or_create(username=email, defaults={
+                'email': email,
+                'first_name': first_name,
+                'last_name': last_name
+            })
 
-            except ValueError as e:
-                print(f"DEBUG: Google Login Auth Error: {str(e)}")
-                return Response({'error': 'Invalid token', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                print(f"DEBUG: Critical Backend Login Error: {str(e)}")
-                return Response({'error': 'Backend Setup Error', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # Issue JWT
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': {
+                    'email': user.email,
+                    'is_staff': user.is_staff
+                }
+            })
+
+        except ValueError as e:
+            print(f"DEBUG: Google Login Auth Error: {str(e)}")
+            return Response({'error': 'Invalid token', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(f"DEBUG: Critical Backend Login Error: {str(e)}")
+            return Response({'error': 'Backend Setup Error', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ReportViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
