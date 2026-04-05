@@ -53,13 +53,11 @@ class GoogleLoginView(APIView):
                 })
 
             except ValueError as e:
-                # Handle clock skew: Token used too early
-                if "Token used too early" in str(e) and attempt < max_retries - 1:
-                    time.sleep(2)
-                    continue
+                print(f"DEBUG: Google Login Auth Error: {str(e)}")
                 return Response({'error': 'Invalid token', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
-                return Response({'error': 'Backend Error', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                print(f"DEBUG: Critical Backend Login Error: {str(e)}")
+                return Response({'error': 'Backend Setup Error', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ReportViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]

@@ -148,5 +148,6 @@ STATICFILES_DIRS = [
 ]
 
 # Use WhiteNoise for high-performance static file serving
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Use simpler WhiteNoise storage to speed up deployment and reduce 502 risks
+STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
 
