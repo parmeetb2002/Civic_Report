@@ -11,7 +11,7 @@ import requests as requests_lib
 import time
 
 from .models import Report
-from .serializers import ReportSerializer
+from .serializers import ReportSerializer, UserSerializer
 from .services import get_gemini_report, get_osm_poi_density, calculate_priority
 
 class GoogleLoginView(APIView):
@@ -122,3 +122,40 @@ class ReportViewSet(viewsets.ModelViewSet):
             density_index=density,
             priority_level=priority
         )
+
+class UserListView(APIView):
+    """
+    Lists all users for admin management. Accessible only to staff.
+    """
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        users = User.objects.all().order_by('-date_joined')
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
+
+class ToggleStaffStatusView(APIView):
+    """
+    Toggles is_staff status for a user. Accessible ONLY to the owner.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # SECURITY: Strictly restrict this to the owner's email
+        if request.user.email.lower() != 'parmeetb2002@gmail.com':
+            return Response({'error': 'Unauthorized. Only the owner can manage admin status.'}, status=status.HTTP_403_FORBIDDEN)
+
+        user_id = request.data.get('user_id')
+        try:
+            target_user = User.objects.get(id=user_id)
+            # Toggle staff status
+            target_user.is_staff = not target_user.is_staff
+            target_user.save()
+            return Response({
+                'id': target_user.id,
+                'email': target_user.email,
+                'is_staff': target_user.is_staff,
+                'message': f"Updated {target_user.email} status to {'Admin' if target_user.is_staff else 'Citizen'}"
+            })
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
