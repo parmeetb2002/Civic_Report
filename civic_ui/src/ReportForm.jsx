@@ -37,7 +37,7 @@ function MapUpdater({ center }) {
 }
 
 function ReportForm() {
-  const { auth, isHydrating } = useContext(AuthContext);
+  const { auth, logout, isHydrating } = useContext(AuthContext);
   const [imageFile, setImageFile] = useState(null);
   const [location, setLocation] = useState({ lat: 28.3670, lon: 79.4304 }); // Default Bareilly
   const [hasDetected, setHasDetected] = useState(false);
@@ -63,8 +63,14 @@ function ReportForm() {
         }
       }
     };
+    
+    // Refresh user profile in case they were granted admin power in another tab/session
+    if (auth?.token && !isHydrating && auth.refreshProfile) {
+      auth.refreshProfile();
+    }
+    
     fetchNotifications();
-  }, [auth]);
+  }, [auth?.token]);
 
   const handleImageChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -194,11 +200,20 @@ function ReportForm() {
           <h1 className="text-4xl font-black tracking-tighter text-primary leading-none mb-1">Bareilly Civic</h1>
           <p className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-[0.2em]">Infrastructure Audit Unit</p>
         </div>
-        {showAdminLink && (
-          <Link to="/dashboard" data-tooltip="Admin Dashboard" className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg active:scale-90 transition-transform">
-            <span className="material-symbols-outlined text-2xl font-black">dashboard</span>
-          </Link>
-        )}
+        <div className="flex items-center gap-3">
+          {showAdminLink && (
+            <Link to="/dashboard" data-tooltip="Admin Dashboard" className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg active:scale-90 transition-transform">
+              <span className="material-symbols-outlined text-2xl font-black">dashboard</span>
+            </Link>
+          )}
+          <button
+            onClick={logout}
+            className="px-4 h-12 rounded-2xl bg-red-50 flex items-center justify-center gap-2 text-red-600 font-bold text-[10px] uppercase tracking-widest shadow-lg border border-red-100 active:scale-90 transition-all hover:bg-red-100"
+          >
+            <span className="material-symbols-outlined text-xl">logout</span>
+            Logout
+          </button>
+        </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-6 space-y-10">
@@ -335,6 +350,10 @@ function ReportForm() {
             <span className="material-symbols-outlined text-2xl">dashboard</span>
           </Link>
         )}
+        
+        <button onClick={logout} data-tooltip="Sign Out" className="flex flex-col items-center justify-center text-red-400 hover:text-red-500 p-2 transition-all">
+          <span className="material-symbols-outlined text-2xl">logout</span>
+        </button>
       </nav>
 
       {/* Modern Static Guide Modal */}

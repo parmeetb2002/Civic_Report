@@ -26,7 +26,7 @@ function MapController() {
 }
 
 function Dashboard() {
-  const { auth, isHydrating } = useContext(AuthContext);
+  const { auth, logout, isHydrating } = useContext(AuthContext);
   const [reports, setReports] = useState([]);
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -171,13 +171,22 @@ function Dashboard() {
 
         <div className="px-6 mt-auto">
           <div className="bg-surface-container-low rounded-[32px] p-4 border border-outline-variant/5">
-             <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center text-white font-black">{auth.user.email?.[0].toUpperCase()}</div>
-                <div className="min-w-0">
-                  <p className="text-xs font-black truncate">{auth.user.email}</p>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center text-white font-black">{auth.user.email?.[0].toUpperCase()}</div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-black truncate">{auth.user.email}</p>
+                    <p className="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-widest">{isOwner ? 'Owner' : 'Staff'}</p>
+                  </div>
                 </div>
-             </div>
-             <Login />
+                <button
+                  onClick={logout}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-red-100 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-lg">logout</span>
+                  Sign Out
+                </button>
+              </div>
           </div>
         </div>
       </aside>

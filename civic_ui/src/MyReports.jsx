@@ -4,7 +4,7 @@ import { AuthContext } from './AuthContext';
 import { Link } from 'react-router-dom';
 
 function MyReports() {
-  const { auth, isHydrating } = useContext(AuthContext);
+  const { auth, logout, isHydrating } = useContext(AuthContext);
   const [reports, setReports] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,9 +27,12 @@ function MyReports() {
     };
 
     if (auth?.token) {
+      if (!isHydrating && auth.refreshProfile) {
+        auth.refreshProfile(); // refresh if they sit on this page
+      }
       fetchData();
     }
-  }, [auth]);
+  }, [auth?.token]);
 
   const markNotificationsRead = async () => {
     const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
@@ -74,17 +77,25 @@ function MyReports() {
           <h1 className="text-4xl font-black tracking-tighter text-primary leading-none mb-1">Citizen Feed</h1>
           <p className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-[0.2em]">Your Civic Contributions</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           <button 
             onClick={() => { setShowNotifications(!showNotifications); if(!showNotifications) markNotificationsRead(); }}
+            data-tooltip="Notifications"
             className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-primary shadow-xl border border-outline-variant/10 relative active:scale-90 transition-transform"
           >
             <span className="material-symbols-outlined text-2xl font-black">notifications</span>
             {unreadCount > 0 && <span className="notification-dot"></span>}
           </button>
-          <Link to="/" className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-primary shadow-xl border border-outline-variant/10 active:scale-90 transition-transform">
+          <Link to="/" data-tooltip="New Report" className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-primary shadow-xl border border-outline-variant/10 active:scale-90 transition-transform">
             <span className="material-symbols-outlined text-2xl font-black">add</span>
           </Link>
+          <button
+            onClick={logout}
+            className="px-4 h-12 rounded-2xl bg-red-50 flex items-center justify-center gap-2 text-red-600 font-bold text-[10px] uppercase tracking-widest shadow-xl border border-red-100 active:scale-90 transition-all hover:bg-red-100"
+          >
+            <span className="material-symbols-outlined text-xl">logout</span>
+            Logout
+          </button>
         </div>
       </header>
 
@@ -179,6 +190,9 @@ function MyReports() {
             <span className="material-symbols-outlined text-2xl">dashboard</span>
           </Link>
         )}
+        <button onClick={logout} data-tooltip="Sign Out" className="flex flex-col items-center justify-center text-red-400 hover:text-red-500 p-2 transition-all">
+          <span className="material-symbols-outlined text-2xl">logout</span>
+        </button>
       </nav>
     </div>
   );

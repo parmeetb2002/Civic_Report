@@ -46,23 +46,60 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Rehydrate session from local storage on load
-    const token = localStorage.getItem('access_token');
-    const refresh = localStorage.getItem('refresh_token');
-    const user = localStorage.getItem('user');
-    
-    if (token && user) {
-      setAuth({
-        token,
-        refresh,
-        user: JSON.parse(user)
-      });
-    }
-    setIsHydrating(false);
+    const hydrate = async () => {
+      const token = localStorage.getItem('access_token');
+      const refresh = localStorage.getItem('refresh_token');
+      const cachedUser = localStorage.getItem('user');
+
+      if (token && cachedUser) {
+        // Set cached state immediately so UI doesn't flicker
+        setAuth({
+          token,
+          refresh,
+          user: JSON.parse(cachedUser)
+        });
+
+        // Then fetch live user data to pick up any is_staff changes
+        try {
+          const res = await axios.get(`/api/me/?t=${new Date().getTime()}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const freshUser = res.data;
+          localStorage.setItem('user', JSON.stringify(freshUser));
+          setAuth(prev => ({
+            ...prev,
+            user: freshUser,
+            token: prev?.token || token,
+            refresh: prev?.refresh || refresh
+          }));
+        } catch (err) {
+          // Token might be expired — try refresh
+          console.warn("Could not refresh user profile, session may be stale.");
+        }
+      }
+      setIsHydrating(false);
+    };
+
+    hydrate();
   }, []);
 
+  const refreshProfile = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    try {
+      const res = await axios.get(`/api/me/?t=${new Date().getTime()}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const freshUser = res.data;
+      localStorage.setItem('user', JSON.stringify(freshUser));
+      setAuth(prev => prev ? { ...prev, user: freshUser } : null);
+    } catch (err) {
+      console.warn("Silent profile refresh failed");
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ auth, login, logout, refreshSession, isHydrating }}>
+    <AuthContext.Provider value={{ auth, login, logout, refreshSession, isHydrating, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

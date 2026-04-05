@@ -76,6 +76,22 @@ class GoogleLoginView(APIView):
             print(f"DEBUG: Critical Backend Login Error: {str(e)}")
             return Response({'error': 'Backend Setup Error', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class MeView(APIView):
+    """
+    Returns the current authenticated user's live profile.
+    Used to refresh is_staff status without requiring re-login.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            'email': user.email,
+            'first_name': user.first_name,
+            'is_staff': user.is_staff,
+            'is_superuser': user.is_superuser,
+        })
+
 class AnalyzeView(APIView):
     """
     Analyzes an image without saving a report. Used for live preview.
