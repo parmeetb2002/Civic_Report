@@ -1,11 +1,19 @@
+# Core Django
 Django==5.1.5
 django-cors-headers
 django-filter
 djangorestframework
 djangorestframework-gis
 djangorestframework_simplejwt
+
+# Production Server & Helpers
+gunicorn
+dj-database-url
+psycopg2-binary
+whitenoise
+
+# AI & Media
 google-generativeai
 pillow
 python-dotenv
 requests
-psycopg2-binary
