@@ -112,7 +112,8 @@ function ReportForm() {
       setHasDetected(false);
     } catch (err) {
       console.error(err);
-      setStatusMsg('Failed to submit report. Please try again.');
+      const errorDetail = err.response?.data ? JSON.stringify(err.response.data) : err.message;
+      setStatusMsg(`Failed to submit: ${errorDetail}`);
     } finally {
       setIsLoading(false);
     }

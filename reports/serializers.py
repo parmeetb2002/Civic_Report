@@ -6,7 +6,7 @@ class ReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = (
             'id', 'user', 'image', 'latitude', 'longitude', 'ai_description', 
-            'severity_score', 'priority_level', 'status', 
+            'severity_score', 'density_index', 'priority_level', 'status', 
             'created_at', 'updated_at'
         )
-        read_only_fields = ('user', 'ai_description', 'severity_score', 'priority_level', 'status')
+        read_only_fields = ('user', 'ai_description', 'severity_score', 'density_index', 'priority_level', 'status')

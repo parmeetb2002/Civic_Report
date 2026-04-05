@@ -19,6 +19,7 @@ class Report(models.Model):
     
     ai_description = models.TextField(blank=True, null=True)
     severity_score = models.IntegerField(blank=True, null=True)
+    density_index = models.IntegerField(blank=True, null=True)
     priority_level = models.CharField(max_length=20, choices=PRIORITY_CHOICES, blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Open')
     
