@@ -62,6 +62,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Critical Fix for Google Login Popup (COOP Policy)
+# This allows the Google popup to communicate its success back to your website
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'
+
 ROOT_URLCONF = 'civic_project.urls'
 
 REST_FRAMEWORK = {
