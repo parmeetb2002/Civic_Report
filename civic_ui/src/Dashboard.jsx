@@ -33,16 +33,18 @@ function Dashboard() {
   const [view, setView] = useState('map'); // 'map' or 'users'
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const isOwner = auth?.user?.email?.toLowerCase() === 'parmeetb2002@gmail.com';
+
   useEffect(() => {
-    if (!isHydrating && auth?.user?.is_staff) {
+    if (!isHydrating && (auth?.user?.is_staff || isOwner)) {
       fetchReports();
-      if (auth.user.email?.toLowerCase() === 'parmeetb2002@gmail.com') {
+      if (isOwner) {
         fetchUsers();
       }
     } else if (!isHydrating) {
       setIsLoading(false);
     }
-  }, [auth, isHydrating]);
+  }, [auth, isHydrating, isOwner]);
 
   const fetchReports = async () => {
     try {
@@ -104,8 +106,6 @@ function Dashboard() {
     );
   }
 
-  // Allow the owner to see the dashboard regardless of is_staff flag
-  const isOwner = auth.user.email?.toLowerCase() === 'parmeetb2002@gmail.com';
   if (!auth.user.is_staff && !isOwner) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-6 text-center">
@@ -135,8 +135,8 @@ function Dashboard() {
 
   return (
     <div className="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container min-h-screen font-body pb-24">
-      {/* SideNavBar */}
-      <aside className="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-[#d4e5ea] dark:bg-slate-800 flex flex-col py-6 z-50">
+      {/* SideNavBar - Hidden on small screens */}
+      <aside className="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-[#d4e5ea] dark:bg-slate-800 hidden lg:flex flex-col py-6 z-50">
         <div className="px-6 mb-10">
           <h1 className="text-xl font-black text-[#002630] dark:text-white uppercase tracking-widest font-headline">Civic Admin</h1>
           <p className="text-[10px] font-bold text-[#002630]/60 uppercase tracking-widest mt-1">City Governance</p>
@@ -187,50 +187,33 @@ function Dashboard() {
 
       {/* TopNavBar */}
       <header className="w-full sticky top-0 z-40 bg-[#f8f9fa] dark:bg-slate-900 border-b border-[#003d4c]/15 dark:border-slate-800 shadow-[0_20px_40px_rgba(0,31,40,0.06)]">
-        <div className="flex justify-between items-center h-16 px-8 ml-64">
+        <div className="flex justify-between items-center h-16 px-8 lg:ml-64 ml-0">
           <div className="flex items-center space-x-6">
             <span className="text-lg font-bold text-[#191c1d] dark:text-slate-100 font-headline">Statesman Console</span>
-            <div className="relative group lg:block hidden">
-              <span className="absolute inset-y-0 left-3 flex items-center text-outline">
-                <span className="material-symbols-outlined text-lg">search</span>
-              </span>
-              <input className="bg-surface-container-high border-none rounded-lg py-2 pl-10 pr-4 text-sm w-80 focus:ring-1 focus:ring-primary-container transition-all text-black" placeholder="Search incidents..." type="text"/>
-            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="ml-64 p-8">
+      <main className="lg:ml-64 ml-0 p-4 lg:p-8">
         {view === 'map' ? (
           <>
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
               <div>
                 <span className="text-[10px] font-bold text-on-primary-fixed-variant uppercase tracking-[0.2em] mb-2 block">System Overview</span>
-                <h2 className="text-3xl font-extrabold text-on-surface tracking-tight leading-none font-headline">Administrative Dashboard</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-surface-container-lowest p-5 rounded-xl flex items-center space-x-4 min-w-[220px]">
-                  <div className="w-12 h-12 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary-container">
-                    <span className="material-symbols-outlined text-2xl">pending_actions</span>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-on-secondary-container uppercase tracking-wider">Active Issues</p>
-                    <p className="text-2xl font-black text-on-surface font-headline">{reports.length}</p>
-                  </div>
-                </div>
+                <h2 className="text-2xl lg:text-3xl font-extrabold text-on-surface tracking-tight leading-none font-headline">Administrative Dashboard</h2>
               </div>
             </div>
 
             <div className="grid grid-cols-12 gap-6">
-              <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm relative group">
+              <div className="col-span-12 lg:col-span-12 bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm relative group">
                 <div className="p-6 border-b border-surface-container">
                   <h3 className="text-lg font-bold text-on-surface flex items-center font-headline">
                     <span className="material-symbols-outlined mr-2 text-primary">location_on</span>
                     Interactive Civic Map
                   </h3>
                 </div>
-                <div className="h-[450px] w-full relative z-0">
+                <div className="h-[400px] lg:h-[500px] w-full relative z-0">
                   <MapContainer center={defaultCenter} zoom={13} minZoom={11} maxBounds={BAREILLY_BOUNDS} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
                     <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                     <MapController />
@@ -256,7 +239,7 @@ function Dashboard() {
                   <p className="text-xs text-on-surface-variant">Real-time submission ledger</p>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                  <table className="w-full text-left border-collapse min-w-[600px]">
                     <thead className="bg-surface-container-low">
                       <tr>
                         {['Issue ID', 'Description', 'Priority', 'Severity', 'Created'].map(h => (
@@ -298,61 +281,69 @@ function Dashboard() {
             </div>
 
             <div className="bg-surface-container-lowest rounded-2xl shadow-xl overflow-hidden border border-[#003d4c]/10">
-              <table className="w-full text-left">
-                <thead className="bg-[#f8f9fa] border-b border-[#003d4c]/10">
-                  <tr>
-                    <th className="px-8 py-5 text-[10px] font-black text-[#002630] uppercase tracking-widest font-headline">User Email</th>
-                    <th className="px-8 py-5 text-[10px] font-black text-[#002630] uppercase tracking-widest font-headline text-center">Role</th>
-                    <th className="px-8 py-5 text-[10px] font-black text-[#002630] uppercase tracking-widest font-headline text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#003d4c]/5">
-                  {users.map(user => (
-                    <tr key={user.id} className="hover:bg-[#f3f4f5]/30">
-                      <td className="px-8 py-6 font-bold text-sm text-[#002630]">{user.email} {user.email?.toLowerCase() === 'parmeetb2002@gmail.com' && <span className="ml-2 text-[8px] bg-primary text-white px-1.5 py-0.5 rounded uppercase tracking-tighter">Owner</span>}</td>
-                      <td className="px-8 py-6 text-center">
-                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${user.is_staff ? 'bg-[#002630] text-white' : 'bg-slate-200 text-slate-500'}`}>
-                          {user.is_staff ? 'Admin' : 'Citizen'}
-                        </span>
-                      </td>
-                      <td className="px-8 py-6 text-right">
-                        {user.email?.toLowerCase() !== 'parmeetb2002@gmail.com' && (
-                          <button 
-                            disabled={isUpdating}
-                            onClick={() => toggleStaff(user.id)}
-                            className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${
-                              user.is_staff 
-                                ? 'bg-error-container text-on-error-container hover:bg-error hover:text-white' 
-                                : 'bg-primary text-white hover:opacity-90'
-                            } ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          >
-                            {user.is_staff ? 'Revoke Access' : 'Make Admin'}
-                          </button>
-                        )}
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left min-w-[500px]">
+                  <thead className="bg-[#f8f9fa] border-b border-[#003d4c]/10">
+                    <tr>
+                      <th className="px-8 py-5 text-[10px] font-black text-[#002630] uppercase tracking-widest font-headline">User Email</th>
+                      <th className="px-8 py-5 text-[10px] font-black text-[#002630] uppercase tracking-widest font-headline text-center">Role</th>
+                      <th className="px-8 py-5 text-[10px] font-black text-[#002630] uppercase tracking-widest font-headline text-right">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-[#003d4c]/5">
+                    {users.map(user => (
+                      <tr key={user.id} className="hover:bg-[#f3f4f5]/30">
+                        <td className="px-8 py-6 font-bold text-sm text-[#002630]">{user.email} {user.email?.toLowerCase() === 'parmeetb2002@gmail.com' && <span className="ml-2 text-[8px] bg-primary text-white px-1.5 py-0.5 rounded uppercase tracking-tighter">Owner</span>}</td>
+                        <td className="px-8 py-6 text-center">
+                          <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${user.is_staff ? 'bg-[#002630] text-white' : 'bg-slate-200 text-slate-500'}`}>
+                            {user.is_staff ? 'Admin' : 'Citizen'}
+                          </span>
+                        </td>
+                        <td className="px-8 py-6 text-right">
+                          {user.email?.toLowerCase() !== 'parmeetb2002@gmail.com' && (
+                            <button 
+                              disabled={isUpdating}
+                              onClick={() => toggleStaff(user.id)}
+                              className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${
+                                user.is_staff 
+                                  ? 'bg-error-container text-on-error-container hover:bg-error hover:text-white' 
+                                  : 'bg-primary text-white hover:opacity-90'
+                              } ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                              {user.is_staff ? 'Revoke Access' : 'Make Admin'}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
       </main>
 
-      {/* Navigation for Staff */}
+      {/* Navigation for Staff - Bottom Bar */}
       <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-8 pt-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-t-3xl shadow-[0_-8px_30px_rgb(0,38,49,0.06)] z-[50]">
         <Link to="/" className="flex flex-col items-center justify-center text-slate-400 p-2">
           <span className="material-symbols-outlined">add_circle</span>
-          <span className="text-[10px] font-bold mt-1">Report</span>
+          <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Report</span>
         </Link>
         <Link to="/my-reports" className="flex flex-col items-center justify-center text-slate-400 p-2">
           <span className="material-symbols-outlined">list_alt</span>
-          <span className="text-[10px] font-bold mt-1">My Reports</span>
+          <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Mine</span>
         </Link>
         <button onClick={() => setView('map')} className={`flex flex-col items-center justify-center p-2 ${view === 'map' ? 'text-primary' : 'text-slate-400'}`}>
           <span className="material-symbols-outlined">analytics</span>
-          <span className="text-[10px] font-bold mt-1">Admin</span>
+          <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter text-center">Dashboard</span>
         </button>
+        {isOwner && (
+          <button onClick={() => setView('users')} className={`flex flex-col items-center justify-center p-2 ${view === 'users' ? 'text-primary' : 'text-slate-400'}`}>
+            <span className="material-symbols-outlined">manage_accounts</span>
+            <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Users</span>
+          </button>
+        )}
       </nav>
     </div>
   );
