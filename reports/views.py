@@ -79,6 +79,7 @@ class AnalyzeView(APIView):
     """
     Analyzes an image without saving a report. Used for live preview.
     """
+    authentication_classes = [] # Total bypass of auth checks
     permission_classes = [AllowAny] # Unlocked for better reliability
 
     def post(self, request):

@@ -49,8 +49,7 @@ function ReportForm() {
       try {
         const res = await axios.post('/api/analyze/', formData, {
           headers: { 
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${auth.token}`
+            'Content-Type': 'multipart/form-data'
           }
         });
         setDescription(res.data.description);
