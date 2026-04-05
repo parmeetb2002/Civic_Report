@@ -275,8 +275,8 @@ class ChatbotView(APIView):
             last_error_code = None
             last_error_text = ""
 
-            # Try each available API key and model combinations (ultimate failover mechanism)
-            models_to_try = ['gemini-2.0-flash', 'gemini-1.5-flash']
+            # Strictly use gemini-2.5-flash as explicitly requested
+            models_to_try = ['gemini-2.5-flash']
             
             for api_key in valid_keys:
                 for model_name in models_to_try:

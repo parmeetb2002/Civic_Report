@@ -13,11 +13,9 @@ def get_gemini_report(image_file):
     try:
         client = genai.Client(api_key=api_key)
         
-        # Use gemini-2.0-flash as the primary stable model, with fallbacks
+        # Strictly use gemini-2.5-flash as explicitly requested
         models_to_try = [
             'gemini-2.5-flash',
-            'gemini-2.0-flash',
-            'gemini-1.5-flash',
         ]
         
         # Prepare image bytes
