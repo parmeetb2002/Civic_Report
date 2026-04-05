@@ -288,28 +288,32 @@ function ReportForm() {
       </main>
 
 
-      <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center px-10 pb-8 pt-4 bg-white/80 backdrop-blur-xl rounded-t-[40px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50">
-        <button onClick={handleDiscard} className="flex flex-col items-center justify-center text-slate-400 hover:text-red-500 transition-colors">
-          <span className="material-symbols-outlined text-3xl">delete_sweep</span>
-          <span className="font-bold text-[10px] uppercase mt-1">Discard</span>
+      <nav className="fixed bottom-6 left-6 right-6 flex justify-around items-center h-20 bg-primary/95 backdrop-blur-3xl rounded-[30px] shadow-2xl z-[100] border border-white/10 px-6 max-w-2xl mx-auto">
+        <button onClick={handleDiscard} className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-all">
+          <span className="material-symbols-outlined text-2xl">delete_sweep</span>
         </button>
+        
+        <Link to="/my-reports" className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-all">
+          <span className="material-symbols-outlined text-2xl">person_pin</span>
+        </Link>
         
         <button 
           onClick={handleSubmit}
           disabled={isLoading || isAnalyzing || !imageFile}
-          className={`flex flex-col items-center justify-center rounded-full w-20 h-20 shadow-2xl transition-all active:scale-90 -mt-14 ${isLoading || isAnalyzing || !imageFile ? 'bg-slate-300' : 'bg-primary text-white'}`}
+          className={`flex flex-col items-center justify-center rounded-[20px] w-16 h-16 shadow-2xl transition-all active:scale-90 -mt-10 border-4 border-surface ${isLoading || isAnalyzing || !imageFile ? 'bg-white/10 text-white/20' : 'bg-white text-primary'}`}
         >
-          {isLoading ? (
-            <span className="material-symbols-outlined text-3xl animate-spin">refresh</span>
-          ) : (
-            <span className="material-symbols-outlined text-4xl">send</span>
-          )}
+          <span className="material-symbols-outlined text-3xl font-black">{isLoading ? 'refresh' : 'send'}</span>
         </button>
 
-        <Link to="/my-reports" className="flex flex-col items-center justify-center text-slate-400 hover:text-primary transition-colors">
-          <span className="material-symbols-outlined text-3xl">list_alt</span>
-          <span className="font-bold text-[10px] uppercase mt-1">Reports</span>
-        </Link>
+        <button onClick={() => setShowGuide(true)} className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-all">
+          <span className="material-symbols-outlined text-2xl">help</span>
+        </button>
+
+        {auth?.user?.is_staff && (
+          <Link to="/dashboard" className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-all">
+            <span className="material-symbols-outlined text-2xl">dashboard</span>
+          </Link>
+        )}
       </nav>
 
       {/* Modern Static Guide Modal */}
