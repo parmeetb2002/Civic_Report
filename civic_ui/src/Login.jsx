@@ -40,6 +40,7 @@ function Login() {
       <GoogleLogin 
         onSuccess={handleSuccess}
         onError={() => setError('Google Login Failed')}
+        ux_mode="redirect"
         theme="filled_blue"
         shape="pill"
       />
