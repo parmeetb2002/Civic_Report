@@ -229,40 +229,36 @@ class ChatbotView(APIView):
         if not user_message:
             return Response({'error': 'No message provided'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Prioritize the specific Chatbot API key if added in Render, otherwise fallback to the primary one
-        api_key = os.environ.get("CHATBOT_GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY", "")
+        keys_to_try = [
+            os.environ.get("CHATBOT_GEMINI_API_KEY"),
+            os.environ.get("GEMINI_API_KEY")
+        ]
+        valid_keys = [k for k in keys_to_try if k and k.strip()]
         
-        if not api_key:
+        if not valid_keys:
             return Response({'reply': 'API key configuration missing on server.'}, status=status.HTTP_200_OK)
-
-        # Reverting to gemini-2.0-flash as it was stable and working before the upgrade attempt
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
 
         try:
             # Build contents list for multi-turn conversation
             contents = []
 
-            # First turn always starts with the system prompt baked in
             if not history:
                 contents.append({
                     "role": "user",
                     "parts": [{"text": f"{self.SYSTEM_PROMPT}\n\nUser question: {user_message}"}]
                 })
             else:
-                # Inject system prompt into the very first user turn
                 first_text = history[0].get('text', '') if history else ''
                 contents.append({
                     "role": "user",
                     "parts": [{"text": f"{self.SYSTEM_PROMPT}\n\nUser question: {first_text}"}]
                 })
-                # Append remaining history (skip the first since we just added it)
                 for turn in history[1:]:
                     role = "user" if turn.get('role') == 'user' else "model"
                     contents.append({
                         "role": role,
                         "parts": [{"text": turn.get('text', '')}]
                     })
-                # Append the current user message
                 contents.append({
                     "role": "user",
                     "parts": [{"text": user_message}]
@@ -276,19 +272,30 @@ class ChatbotView(APIView):
                 }
             }
 
-            res = requests_lib.post(url, json=payload, timeout=20)
+            last_error_code = None
+            last_error_text = ""
 
-            if res.status_code != 200:
-                error_detail = res.text[:300]
-                print(f"Gemini API error {res.status_code}: {error_detail}")
-                return Response(
-                    {'reply': f"API error ({res.status_code}). Please check the API key or try again."},
-                    status=status.HTTP_200_OK
-                )
+            # Try each available API key (failover mechanisms)
+            for api_key in valid_keys:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+                res = requests_lib.post(url, json=payload, timeout=20)
 
-            data = res.json()
-            reply_text = data['candidates'][0]['content']['parts'][0]['text']
-            return Response({'reply': reply_text})
+                if res.status_code == 200:
+                    data = res.json()
+                    reply_text = data['candidates'][0]['content']['parts'][0]['text']
+                    return Response({'reply': reply_text})
+                
+                last_error_code = res.status_code
+                last_error_text = res.text[:200]
+                print(f"Gemini API error {last_error_code} with key: {last_error_text}")
+
+            # If all keys failed, format a highly readable error
+            if last_error_code == 429:
+                return Response({'reply': "I am currently receiving too many messages (Quota Exceeded). Let me catch my breath—please try again in a minute!"}, status=status.HTTP_200_OK)
+            elif last_error_code == 403:
+                return Response({'reply': "My API key lacks proper permissions. The server admin needs to enable the Generative Language API in Google Cloud."}, status=status.HTTP_200_OK)
+            else:
+                return Response({'reply': f"I ran into a server communication error ({last_error_code}). Please try again later."}, status=status.HTTP_200_OK)
 
         except Exception as e:
             print(f"ChatbotView exception: {type(e).__name__}: {e}")
