@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Report
+from .models import Report, Notification
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,6 +13,11 @@ class ReportSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'user', 'image', 'latitude', 'longitude', 'ai_description', 
             'severity_score', 'density_index', 'priority_level', 'status', 
-            'created_at', 'updated_at'
+            'resolved_image', 'resolved_at', 'created_at', 'updated_at'
         )
-        read_only_fields = ('user', 'ai_description', 'severity_score', 'density_index', 'priority_level', 'status')
+        read_only_fields = ('user', 'ai_description', 'severity_score', 'density_index', 'priority_level')
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'

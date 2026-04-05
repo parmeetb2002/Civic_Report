@@ -2,55 +2,56 @@ import os
 import requests
 import json
 import base64
-import google.generativeai as genai
+from google import genai
 from urllib.error import HTTPError
 
 def get_gemini_report(image_file):
     """
-    Sends the image to the Gemini API for analysis to extract description and a severity score (1-10).
+    Sends the image to the Gemini API for analysis to extract description and a severity score (1-10) using google-genai SDK.
     """
     api_key = os.environ.get("GEMINI_API_KEY")
     try:
-        genai.configure(api_key=api_key)
+        client = genai.Client(api_key=api_key)
         
-        # We try multiple models in order of speed/reliability to avoid 404s/429s
+        # We try multiple models in order of speed/reliability
         models_to_try = [
             'gemini-2.0-flash',
-            'gemini-2.0-flash-exp',
-            'gemini-2.5-flash',
             'gemini-1.5-flash',
-            'gemini-1.5-flash-001',
-            'gemini-1.5-flash-8b',
-            'gemini-1.5-pro',
-            'gemini-1.5-flash-latest'
+            'gemini-1.5-pro'
         ]
         
-        # Read the image bytes if provided
-        image_parts = []
-        if image_file:
-            image_data = image_file.read()
-            image_file.seek(0)
-            image_parts = [
-                {
-                    "mime_type": getattr(image_file, "content_type", "image/jpeg"),
-                    "data": image_data
-                }
-            ]
-        
-        if not image_parts:
+        # Prepare image bytes
+        if not image_file:
             return {"description": "No image data found.", "severity": 5, "error": "No image data"}
 
-        prompt = "Analyze this image of a civic issue (pothole, broken light, garbage, etc.). Provide a JSON response with keys 'description' (short summary) and 'severity' (integer 1-10)."
-        generation_config = {"response_mime_type": "application/json"}
+        # Reset pointer just in case and read
+        image_file.seek(0)
+        image_data = image_file.read()
+        image_file.seek(0)
 
+        prompt = "Analyze this image of a civic issue (pothole, broken light, garbage, etc.). Provide a JSON response with keys 'description' (short summary) and 'severity' (integer 1-10)."
+        
+        from google.genai import types
+        
         # THE LOOP: Try models until one works or we run out
         last_error = ""
         for model_name in models_to_try:
             try:
-                model = genai.GenerativeModel(model_name)
-                response = model.generate_content([prompt, image_parts[0]], generation_config=generation_config)
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=[
+                        prompt,
+                        types.Part.from_bytes(
+                            data=image_data, 
+                            mime_type=getattr(image_file, "content_type", "image/jpeg")
+                        )
+                    ],
+                    config=types.GenerateContentConfig(
+                        response_mime_type='application/json',
+                    )
+                )
                 
-                # Parse JSON
+                # Parse JSON from response
                 data = json.loads(response.text)
                 return {
                     "description": data.get("description", "Analyzed successfully."),
@@ -59,24 +60,21 @@ def get_gemini_report(image_file):
                 }
             except Exception as e:
                 last_error = str(e)
-                # If it's a 404 (not found) or 429 (quota), we try the next model
                 if "404" in last_error or "429" in last_error:
-                    print(f"Model {model_name} failed ({last_error[:20]}...). Trying next...")
                     continue
-                # For other critical errors (safety, etc), we stop
                 break
 
         return {
-            "description": f"AI analysis unavailable. Last attempted error: {last_error}",
+            "description": f"AI analysis unavailable. Trace: {last_error}",
             "severity": 5,
             "error": last_error
         }
 
     except Exception as e:
         error_msg = str(e)
-        print(f"Gemini API Critical Error: {error_msg}")
+        print(f"GenAI Client Error: {error_msg}")
         return {
-            "description": f"Critical AI Error: {error_msg}",
+            "description": f"Internal AI Error: {error_msg}",
             "severity": 5,
             "error": error_msg
         }

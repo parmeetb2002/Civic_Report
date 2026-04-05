@@ -155,3 +155,6 @@ STATICFILES_DIRS = [
 # Use simpler WhiteNoise storage to speed up deployment and reduce 502 risks
 STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
 
+# Standard Django 3.2+ auto field
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

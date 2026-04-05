@@ -14,6 +14,7 @@ whitenoise
 
 # AI & Auth
 google-generativeai>=0.8.2
+google-genai
 google-auth
 google-api-python-client
 pillow

@@ -46,6 +46,24 @@ function ReportForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (auth?.token) {
+        try {
+          const res = await axios.get('/api/notifications/', {
+            headers: { Authorization: `Bearer ${auth.token}` }
+          });
+          const unread = res.data.filter(n => !n.is_read).length;
+          setUnreadNotifications(unread);
+        } catch (err) {
+          console.error("Notification fetch failed", err);
+        }
+      }
+    };
+    fetchNotifications();
+  }, [auth]);
 
   const handleImageChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -176,7 +194,7 @@ function ReportForm() {
           <p className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-[0.2em]">Infrastructure Audit Unit</p>
         </div>
         {showAdminLink && (
-          <Link to="/dashboard" className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg active:scale-90 transition-transform">
+          <Link to="/dashboard" data-tooltip="Admin Dashboard" className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg active:scale-90 transition-transform">
             <span className="material-symbols-outlined text-2xl font-black">dashboard</span>
           </Link>
         )}
@@ -289,28 +307,30 @@ function ReportForm() {
 
 
       <nav className="fixed bottom-6 left-6 right-6 flex justify-around items-center h-20 bg-primary/95 backdrop-blur-3xl rounded-[30px] shadow-2xl z-[100] border border-white/10 px-6 max-w-2xl mx-auto">
-        <button onClick={handleDiscard} className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-all">
+        <button onClick={handleDiscard} data-tooltip="Clear Draft" className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-all">
           <span className="material-symbols-outlined text-2xl">delete_sweep</span>
         </button>
         
-        <Link to="/my-reports" className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-all">
+        <Link to="/my-reports" data-tooltip="Participation Feed" className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-all relative">
           <span className="material-symbols-outlined text-2xl">person_pin</span>
+          {unreadNotifications > 0 && <span className="notification-dot"></span>}
         </Link>
         
         <button 
           onClick={handleSubmit}
           disabled={isLoading || isAnalyzing || !imageFile}
+          data-tooltip={imageFile ? "Submit Findings" : "Camera Required"}
           className={`flex flex-col items-center justify-center rounded-[20px] w-16 h-16 shadow-2xl transition-all active:scale-90 -mt-10 border-4 border-surface ${isLoading || isAnalyzing || !imageFile ? 'bg-white/10 text-white/20' : 'bg-white text-primary'}`}
         >
           <span className="material-symbols-outlined text-3xl font-black">{isLoading ? 'refresh' : 'send'}</span>
         </button>
 
-        <button onClick={() => setShowGuide(true)} className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-all">
+        <button onClick={() => setShowGuide(true)} data-tooltip="Field Guide" className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-all">
           <span className="material-symbols-outlined text-2xl">help</span>
         </button>
 
         {auth?.user?.is_staff && (
-          <Link to="/dashboard" className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-all">
+          <Link to="/dashboard" data-tooltip="Staff Portal" className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-all">
             <span className="material-symbols-outlined text-2xl">dashboard</span>
           </Link>
         )}

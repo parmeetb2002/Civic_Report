@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ReportViewSet, GoogleLoginView, AnalyzeView, UserListView, ToggleStaffStatusView
+from .views import ReportViewSet, GoogleLoginView, AnalyzeView, UserListView, ToggleStaffStatusView, NotificationViewSet
 from rest_framework_simplejwt.views import TokenRefreshView
 
 router = DefaultRouter()
 router.register(r'reports', ReportViewSet, basename='reports')
+router.register(r'notifications', NotificationViewSet, basename='notifications')
 
 urlpatterns = [
     path('analyze/', AnalyzeView.as_view(), name='analyze_image'),

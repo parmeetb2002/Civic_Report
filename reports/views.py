@@ -10,8 +10,8 @@ from google.auth.transport import requests
 import requests as requests_lib
 import time
 
-from .models import Report
-from .serializers import ReportSerializer, UserSerializer
+from .models import Report, Notification
+from .serializers import ReportSerializer, UserSerializer, NotificationSerializer
 from .services import get_gemini_report, get_osm_poi_density, calculate_priority
 
 class GoogleLoginView(APIView):
@@ -122,6 +122,34 @@ class ReportViewSet(viewsets.ModelViewSet):
             density_index=density,
             priority_level=priority
         )
+
+    def perform_update(self, serializer):
+        old_status = self.get_object().status
+        new_status = self.request.data.get('status')
+        
+        instance = serializer.save()
+        
+        if old_status != 'Resolved' and new_status == 'Resolved':
+            # Create Notification for the citizen who reported the issue
+            if instance.user:
+                Notification.objects.create(
+                    user=instance.user,
+                    report=instance,
+                    message=f"Good news! Your report #{instance.id} has been marked as Resolved by an official. Evidence of the fix has been uploaded."
+                )
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
+
+    def mark_as_read(self, request, pk=None):
+        notification = self.get_object()
+        notification.is_read = True
+        notification.save()
+        return Response({'status': 'notification marked as read'})
 
 class UserListView(APIView):
     """
