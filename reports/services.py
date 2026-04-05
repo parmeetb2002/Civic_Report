@@ -12,8 +12,8 @@ def get_gemini_report(image_file):
     api_key = os.environ.get("GEMINI_API_KEY")
     try:
         genai.configure(api_key=api_key)
-        # Use the most stable available pointer for the Flash model
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # Using the robust stable pointer for the Flash model
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
         
         # Read the image bytes if provided
         image_parts = []
