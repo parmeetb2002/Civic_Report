@@ -9,6 +9,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 import requests as requests_lib
 import time
+import os
 
 from .models import Report, Notification
 from .serializers import ReportSerializer, UserSerializer, NotificationSerializer
@@ -187,3 +188,69 @@ class ToggleStaffStatusView(APIView):
             })
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class ChatbotView(APIView):
+    """
+    Proxies user messages to Gemini for the civic help chatbot.
+    API key is kept securely on the server.
+    """
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    SYSTEM_PROMPT = """You are CivicBot, a friendly and helpful assistant for the Bareilly Civic Reporting Platform.
+Your job is to help citizens of Bareilly understand:
+- How to submit infrastructure issue reports (potholes, broken lights, garbage, illegal dumping, etc.)
+- What types of issues can be reported
+- How the AI-powered triage system works and how priority levels are assigned
+- How to track their reports and check resolution status
+- General civic information about Bareilly, Uttar Pradesh
+- How admin officials review and resolve reports
+
+Keep your responses concise, friendly, and helpful. Use simple language.
+If asked about something unrelated to civic issues or the platform, politely redirect to your purpose.
+Always be encouraging and remind citizens that their reports help improve Bareilly's infrastructure."""
+
+    def post(self, request):
+        user_message = request.data.get('message', '').strip()
+        history = request.data.get('history', [])
+
+        if not user_message:
+            return Response({'error': 'No message provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        api_key = os.environ.get("CHATBOT_GEMINI_API_KEY", "AIzaSyCF74MyauncKvzWAt96TIMcPQqdZIUnA5E")
+
+        try:
+            from google import genai
+            from google.genai import types
+
+            client = genai.Client(api_key=api_key)
+
+            # Build conversation history for context
+            contents = [types.Content(role="user", parts=[types.Part(text=self.SYSTEM_PROMPT + "\n\nUser: " + user_message)])]
+
+            # Append previous history (last 6 turns for context window efficiency)
+            if history:
+                user_turn = self.SYSTEM_PROMPT + "\n\nUser: " + (history[0]['text'] if history else "")
+                contents = [types.Content(role="user", parts=[types.Part(text=user_turn)])]
+                for turn in history[-6:]:
+                    role = "user" if turn.get('role') == 'user' else "model"
+                    contents.append(types.Content(role=role, parts=[types.Part(text=turn['text'])]))
+                contents.append(types.Content(role="user", parts=[types.Part(text=user_message)]))
+
+            response = client.models.generate_content(
+                model='gemini-2.0-flash',
+                contents=contents,
+                config=types.GenerateContentConfig(
+                    max_output_tokens=500,
+                    temperature=0.7,
+                )
+            )
+
+            return Response({'reply': response.text})
+
+        except Exception as e:
+            print(f"Chatbot error: {e}")
+            return Response(
+                {'reply': "Sorry, I'm having trouble connecting right now. Please try again shortly!"},
+                status=status.HTTP_200_OK
+            )

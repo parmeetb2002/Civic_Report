@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { AuthContext } from './AuthContext';
 import Login from './Login';
+import Chatbot from './Chatbot';
 import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -374,6 +375,8 @@ function ReportForm() {
           </div>
         </div>
       )}
+      {/* Floating Chatbot — only for logged-in users */}
+      {auth?.user && <Chatbot />}
     </div>
   );
 }
