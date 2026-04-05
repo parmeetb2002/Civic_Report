@@ -1,7 +1,7 @@
 # Core Django
 Django==5.1.5
 django-cors-headers
-django-filter
+django-filter<25.0
 djangorestframework
 djangorestframework-gis
 djangorestframework_simplejwt
@@ -12,8 +12,10 @@ dj-database-url
 psycopg2-binary
 whitenoise
 
-# AI & Media
+# AI & Auth
 google-generativeai
+google-auth
+google-api-python-client
 pillow
 python-dotenv
 requests
