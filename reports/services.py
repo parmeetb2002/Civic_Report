@@ -56,11 +56,12 @@ def get_gemini_report(image_file):
             }
 
     except Exception as e:
-        print(f"Gemini API Error: {e}")
+        error_msg = str(e)
+        print(f"Gemini API Error: {error_msg}")
         return {
-            "description": "AI analysis unavailable.",
+            "description": f"AI analysis unavailable. Error: {error_msg}",
             "severity": 5,
-            "error": str(e)
+            "error": error_msg
         }
 
 def get_osm_poi_density(lat, lon):
