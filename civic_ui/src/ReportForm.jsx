@@ -205,7 +205,7 @@ function ReportForm() {
                   </div>
                 </>
               ) : (
-                <div className="relative z-10 flex flex-col items-center space-y-4">
+                <div className="relative z-10 flex flex-col items-center space-y-4 animate-bounce">
                   <div className="w-20 h-20 rounded-[30px] bg-primary/5 flex items-center justify-center text-primary">
                     <span className="material-symbols-outlined text-4xl font-black">photo_camera</span>
                   </div>
@@ -296,8 +296,8 @@ function ReportForm() {
         
         <button 
           onClick={handleSubmit}
-          disabled={isLoading || isAnalyzing}
-          className={`flex flex-col items-center justify-center rounded-full w-20 h-20 shadow-2xl transition-all active:scale-90 -mt-14 ${isLoading || isAnalyzing ? 'bg-slate-300' : 'bg-primary text-white'}`}
+          disabled={isLoading || isAnalyzing || !imageFile}
+          className={`flex flex-col items-center justify-center rounded-full w-20 h-20 shadow-2xl transition-all active:scale-90 -mt-14 ${isLoading || isAnalyzing || !imageFile ? 'bg-slate-300' : 'bg-primary text-white'}`}
         >
           {isLoading ? (
             <span className="material-symbols-outlined text-3xl animate-spin">refresh</span>
@@ -306,10 +306,10 @@ function ReportForm() {
           )}
         </button>
 
-        <button onClick={() => setShowGuide(true)} className="flex flex-col items-center justify-center text-slate-400 hover:text-primary transition-colors">
-          <span className="material-symbols-outlined text-3xl">auto_stories</span>
-          <span className="font-bold text-[10px] uppercase mt-1">Guide</span>
-        </button>
+        <Link to="/my-reports" className="flex flex-col items-center justify-center text-slate-400 hover:text-primary transition-colors">
+          <span className="material-symbols-outlined text-3xl">list_alt</span>
+          <span className="font-bold text-[10px] uppercase mt-1">Reports</span>
+        </Link>
       </nav>
 
       {/* Modern Static Guide Modal */}
