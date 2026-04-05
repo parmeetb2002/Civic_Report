@@ -13,11 +13,13 @@ def get_gemini_report(image_file):
     try:
         genai.configure(api_key=api_key)
         
-        # We try multiple models in order of speed/reliability to avoid 404s
+        # We try multiple models in order of speed/reliability to avoid 404s/429s
         models_to_try = [
             'gemini-2.0-flash',
             'gemini-2.0-flash-exp',
+            'gemini-2.5-flash',
             'gemini-1.5-flash',
+            'gemini-1.5-flash-001',
             'gemini-1.5-flash-8b',
             'gemini-1.5-pro',
             'gemini-1.5-flash-latest'
@@ -57,10 +59,11 @@ def get_gemini_report(image_file):
                 }
             except Exception as e:
                 last_error = str(e)
-                if "404" in last_error:
-                    print(f"Model {model_name} not found (404). Trying next...")
+                # If it's a 404 (not found) or 429 (quota), we try the next model
+                if "404" in last_error or "429" in last_error:
+                    print(f"Model {model_name} failed ({last_error[:20]}...). Trying next...")
                     continue
-                # If it's not a 404 (e.g. quota or safety), we stop and show that
+                # For other critical errors (safety, etc), we stop
                 break
 
         return {
