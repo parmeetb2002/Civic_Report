@@ -39,8 +39,8 @@ function Login() {
       {error && <span style={{ color: 'var(--error)' }}>{error}</span>}
       <GoogleLogin 
         onSuccess={handleSuccess}
-        onError={() => setError('Google Login Failed')}
-        ux_mode="redirect"
+        onError={() => setError('Google Login Failed (Check Console Links)')}
+        use_fedcm_for_prompt={true}
         theme="filled_blue"
         shape="pill"
       />
