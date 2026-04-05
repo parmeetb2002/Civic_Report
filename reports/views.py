@@ -275,21 +275,24 @@ class ChatbotView(APIView):
             last_error_code = None
             last_error_text = ""
 
-            # Try each available API key (failover mechanisms)
+            # Try each available API key and model combinations (ultimate failover mechanism)
+            models_to_try = ['gemini-2.0-flash', 'gemini-1.5-flash']
+            
             for api_key in valid_keys:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
-                res = requests_lib.post(url, json=payload, timeout=20)
+                for model_name in models_to_try:
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+                    res = requests_lib.post(url, json=payload, timeout=20)
 
-                if res.status_code == 200:
-                    data = res.json()
-                    reply_text = data['candidates'][0]['content']['parts'][0]['text']
-                    return Response({'reply': reply_text})
-                
-                last_error_code = res.status_code
-                last_error_text = res.text[:200]
-                print(f"Gemini API error {last_error_code} with key: {last_error_text}")
+                    if res.status_code == 200:
+                        data = res.json()
+                        reply_text = data['candidates'][0]['content']['parts'][0]['text']
+                        return Response({'reply': reply_text})
+                    
+                    last_error_code = res.status_code
+                    last_error_text = res.text[:200]
+                    print(f"Gemini API error {last_error_code} with key/model ({model_name}): {last_error_text}")
 
-            # If all keys failed, format a highly readable error
+            # If all keys and models failed, format a highly readable error
             if last_error_code == 429:
                 return Response({'reply': "I am currently receiving too many messages (Quota Exceeded). Let me catch my breath—please try again in a minute!"}, status=status.HTTP_200_OK)
             elif last_error_code == 403:
