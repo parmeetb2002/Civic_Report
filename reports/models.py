@@ -22,6 +22,8 @@ class Report(models.Model):
     priority_level = models.CharField(max_length=20, choices=PRIORITY_CHOICES, blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Open')
     
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True, blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -40,7 +40,7 @@ function Dashboard() {
 
   const fetchReports = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/reports/', {
+      const response = await axios.get('/api/reports/', {
         headers: { Authorization: `Bearer ${auth.token}` }
       });
       setReports(response.data);
@@ -61,14 +61,22 @@ function Dashboard() {
     );
   }
 
-  if (!auth?.user?.is_staff) {
+  if (!auth?.user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-surface">
-        <div className="bg-white p-8 rounded-xl shadow-lg text-center border border-red-100">
-          <h2 className="text-2xl font-bold text-error mb-4">Unauthorized Access</h2>
-          <p className="text-on-surface-variant mb-6">Please log in with an administrative account to view reports.</p>
-          <Login />
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-6 text-center">
+        <h1 className="text-3xl font-black text-slate-800 tracking-tighter">RESTRICTED AREA</h1>
+        <p className="text-slate-500 mt-2 mb-8">Please login as a staff member to view analytics.</p>
+        <Login />
+      </div>
+    );
+  }
+
+  if (!auth.user.is_staff) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-6 text-center">
+        <h1 className="text-3xl font-black text-slate-800 tracking-tighter">STAFF ONLY</h1>
+        <p className="text-slate-500 mt-2 mb-8">Citizens can track their reports on their personal dashboard.</p>
+        <Link to="/my-reports" className="bg-primary text-white px-8 py-3 rounded-full font-bold shadow-lg hover:opacity-90 transition-all">Go to My Reports</Link>
       </div>
     );
   }
@@ -267,6 +275,21 @@ function Dashboard() {
           </div>
         </div>
       </main>
+      {/* Navigation for Staff */}
+      <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-8 pt-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-t-3xl shadow-[0_-8px_30px_rgb(0,38,49,0.06)] z-[50]">
+        <Link to="/" className="flex flex-col items-center justify-center text-slate-400 p-2">
+          <span className="material-symbols-outlined">add_circle</span>
+          <span className="text-[10px] font-bold mt-1">Report</span>
+        </Link>
+        <Link to="/my-reports" className="flex flex-col items-center justify-center text-slate-400 p-2">
+          <span className="material-symbols-outlined">list_alt</span>
+          <span className="text-[10px] font-bold mt-1">My Reports</span>
+        </Link>
+        <Link to="/dashboard" className="flex flex-col items-center justify-center text-primary p-2">
+          <span className="material-symbols-outlined">analytics</span>
+          <span className="text-[10px] font-bold mt-1">Admin</span>
+        </Link>
+      </nav>
     </div>
   );
 }

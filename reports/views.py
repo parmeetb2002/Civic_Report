@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAdminUser, AllowAny
+from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
 from django.contrib.auth.models import User
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -62,20 +62,16 @@ class GoogleLoginView(APIView):
                 return Response({'error': 'Backend Error', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ReportViewSet(viewsets.ModelViewSet):
-    queryset = Report.objects.all().order_by('-created_at')
+    permission_classes = [IsAuthenticated]
     serializer_class = ReportSerializer
 
-    def get_permissions(self):
-        # Allow anyone to POST (report an issue)
-        if self.action == 'create':
-            return [AllowAny()]
-        # Require admin for viewing the dashboard/list
-        return [IsAdminUser()]
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return Report.objects.all().order_by('-created_at')
+        return Report.objects.filter(user=user).order_by('-created_at')
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
+    def perform_create(self, serializer):
         image = serializer.validated_data.get('image')
         lat = serializer.validated_data.get('latitude')
         lon = serializer.validated_data.get('longitude')
@@ -90,11 +86,11 @@ class ReportViewSet(viewsets.ModelViewSet):
 
         priority = calculate_priority(severity, density)
 
-        report = serializer.save(
+        serializer.save(
+            user=self.request.user,
             ai_description=description,
             severity_score=severity,
             priority_level=priority
         )
 
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    # Removed original create method as it's now handled in perform_create for better DRY logic

@@ -1,12 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
+import { AuthContext } from './AuthContext';
+import Login from './Login';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import L from 'leaflet';
+
+// Fix for default marker icons
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+function MapUpdater({ center }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.flyTo(center, 16);
+    }
+  }, [center, map]);
+  return null;
+}
 
 function ReportForm() {
+  const { auth } = useContext(AuthContext);
   const [imageFile, setImageFile] = useState(null);
-  const [location, setLocation] = useState({ lat: '', lon: '' });
+  const [location, setLocation] = useState({ lat: 28.3670, lon: 79.4304 }); // Default Bareilly
+  const [hasDetected, setHasDetected] = useState(false);
   const [category, setCategory] = useState('');
   const [statusMsg, setStatusMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -21,6 +46,7 @@ function ReportForm() {
           lat: position.coords.latitude.toFixed(6),
           lon: position.coords.longitude.toFixed(6)
         });
+        setHasDetected(true);
         setStatusMsg('Location detected successfully.');
       });
     } else {
@@ -43,20 +69,51 @@ function ReportForm() {
     formData.append('longitude', location.lon || '0.00');
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/reports/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const response = await axios.post('/api/reports/', formData, {
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${auth.token}`
+        }
       });
       
       setStatusMsg(`Success! Triage score: ${response.data.severity_score}`);
       setImageFile(null);
       setCategory('');
+      setHasDetected(false);
     } catch (err) {
       console.error(err);
-      setStatusMsg('Failed to submit report.');
+      setStatusMsg('Failed to submit report. Please log in again.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleDiscard = () => {
+    if (window.confirm("Are you sure you want to discard this report?")) {
+      setImageFile(null);
+      setLocation({ lat: 28.3670, lon: 79.4304 });
+      setCategory('');
+      setHasDetected(false);
+      setStatusMsg('Report discarded.');
+    }
+  };
+
+  if (!auth?.user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-surface px-6 text-center space-y-6">
+        <div className="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center text-primary shadow-inner">
+          <span className="material-symbols-outlined text-4xl">lock</span>
+        </div>
+        <div>
+          <h2 className="text-2xl font-black text-on-surface font-headline">Authentication Required</h2>
+          <p className="text-on-surface-variant mt-2 max-w-xs mx-auto">Please sign in with your Google account to start helping your city.</p>
+        </div>
+        <div className="bg-white p-4 rounded-2xl shadow-xl border border-outline-variant/30">
+          <Login />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface text-on-surface min-h-screen pb-32">
@@ -108,9 +165,19 @@ function ReportForm() {
             </div>
             <span className="material-symbols-outlined text-outline">chevron_right</span>
           </div>
-          <div className="w-full h-32 rounded-lg overflow-hidden relative shadow-sm border border-outline-variant/10">
-            <img className="w-full h-full object-cover" alt="abstract stylized map view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUi6lfd4kLC1h3Ye3cDesmRWpmPkZSHJzIIt1Hfl12jlZsR_go_Mx4k1cKXVDOxkW_MeHsEClWsXCpFHcwKqHwqjPt9yUpXUt3eO02fwe87cIkllrGcGz_41_fbOapE0K3vkmP_0T2Yk8TQMHBjTPqNIOZznk8V0axwFxueRMcTyZ0ZLDD9KBB2-0MakpR0oz1U9ee1-Z3pLvhEtgApk5z93ZZoyhj3xKVTMZyT9dgZ0P5TZOeeZF86WSH4YF7Sf2OH0KcMcej7Hcp"/>
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent"></div>
+          <div className="w-full h-48 rounded-lg overflow-hidden relative shadow-sm border border-outline-variant/10 z-0">
+            <MapContainer 
+              center={[location.lat, location.lon]} 
+              zoom={13} 
+              style={{ height: '100%', width: '100%' }}
+              scrollWheelZoom={false}
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {hasDetected && <Marker position={[location.lat, location.lon]} />}
+              <MapUpdater center={hasDetected ? [location.lat, location.lon] : null} />
+            </MapContainer>
           </div>
         </section>
 
@@ -131,7 +198,7 @@ function ReportForm() {
       </main>
 
       <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-8 pt-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-t-3xl shadow-[0_-8px_30px_rgb(0,38,49,0.06)] z-50">
-        <button className="flex flex-col items-center justify-center text-slate-400 p-4 hover:opacity-90 transition-opacity active:scale-98 duration-150">
+        <button onClick={handleDiscard} className="flex flex-col items-center justify-center text-slate-400 p-4 hover:opacity-90 transition-opacity active:scale-98 duration-150">
           <span className="material-symbols-outlined text-2xl">cancel</span>
           <span className="font-['Inter'] font-semibold tracking-wide uppercase text-[10px] mt-1">Discard</span>
         </button>
@@ -142,11 +209,37 @@ function ReportForm() {
         >
           {isLoading ? <span className="material-symbols-outlined text-xl animate-spin">refresh</span> : <span className="material-symbols-outlined text-3xl">send</span>}
         </button>
-        <button className="flex flex-col items-center justify-center text-slate-400 p-4 hover:opacity-90 transition-opacity active:scale-98 duration-150">
+        <button onClick={() => setShowGuide(true)} className="flex flex-col items-center justify-center text-slate-400 p-4 hover:opacity-90 transition-opacity active:scale-98 duration-150">
           <span className="material-symbols-outlined text-2xl">help</span>
           <span className="font-['Inter'] font-semibold tracking-wide uppercase text-[10px] mt-1">Guide</span>
         </button>
       </nav>
+
+      {/* Video Guide Modal */}
+      {showGuide && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl relative">
+            <button onClick={() => setShowGuide(false)} className="absolute top-4 right-4 z-10 bg-black/20 hover:bg-black/40 text-white rounded-full p-1">
+              <span className="material-symbols-outlined">close</span>
+            </button>
+            <div className="aspect-video w-full bg-black">
+              <iframe 
+                width="100%" 
+                height="100%" 
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0" 
+                title="Reporting Guide" 
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+              ></iframe>
+            </div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-primary mb-2">How to Report an Issue</h3>
+              <p className="text-sm text-on-surface-variant">1. Upload a clear photo of the issue.<br/>2. Detect your GPS location.<br/>3. Choose a category and tap Send.</p>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[60] pointer-events-none">
         <span className="font-['Inter'] font-semibold tracking-widest uppercase text-xs text-primary-container bg-white/40 backdrop-blur-sm px-3 py-1 rounded-full">Submit Report</span>
