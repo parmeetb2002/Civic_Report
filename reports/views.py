@@ -214,7 +214,7 @@ class ChatbotView(APIView):
             return Response({'error': 'No message provided'}, status=status.HTTP_400_BAD_REQUEST)
 
         api_key = os.environ.get("CHATBOT_GEMINI_API_KEY", "AIzaSyCF74MyauncKvzWAt96TIMcPQqdZIUnA5E")
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
 
         try:
             # Build contents list for multi-turn conversation

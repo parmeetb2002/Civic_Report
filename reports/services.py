@@ -13,11 +13,9 @@ def get_gemini_report(image_file):
     try:
         client = genai.Client(api_key=api_key)
         
-        # We try multiple models in order of speed/reliability
+        # Use gemini-2.5-flash as the primary model
         models_to_try = [
-            'gemini-2.0-flash',
-            'gemini-1.5-flash',
-            'gemini-1.5-pro'
+            'gemini-2.5-flash',
         ]
         
         # Prepare image bytes
