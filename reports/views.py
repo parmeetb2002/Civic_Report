@@ -191,66 +191,86 @@ class ToggleStaffStatusView(APIView):
 
 class ChatbotView(APIView):
     """
-    Proxies user messages to Gemini for the civic help chatbot.
-    API key is kept securely on the server.
+    Proxies user messages to Gemini REST API for the civic help chatbot.
+    Uses direct HTTP requests to avoid SDK version dependency issues.
     """
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    SYSTEM_PROMPT = """You are CivicBot, a friendly and helpful assistant for the Bareilly Civic Reporting Platform.
-Your job is to help citizens of Bareilly understand:
-- How to submit infrastructure issue reports (potholes, broken lights, garbage, illegal dumping, etc.)
-- What types of issues can be reported
-- How the AI-powered triage system works and how priority levels are assigned
-- How to track their reports and check resolution status
-- General civic information about Bareilly, Uttar Pradesh
-- How admin officials review and resolve reports
-
-Keep your responses concise, friendly, and helpful. Use simple language.
-If asked about something unrelated to civic issues or the platform, politely redirect to your purpose.
-Always be encouraging and remind citizens that their reports help improve Bareilly's infrastructure."""
+    SYSTEM_PROMPT = (
+        "You are CivicBot, a friendly assistant for the Bareilly Civic Reporting Platform. "
+        "Help citizens understand: how to submit infrastructure reports (potholes, broken lights, "
+        "garbage, illegal dumping), how the AI triage system works, how priority levels are assigned, "
+        "how to track reports and check resolution status, and general civic information about Bareilly. "
+        "Keep responses concise and friendly. If asked about unrelated topics, politely redirect. "
+        "Always encourage citizens - their reports help improve Bareilly's infrastructure."
+    )
 
     def post(self, request):
         user_message = request.data.get('message', '').strip()
-        history = request.data.get('history', [])
+        history = request.data.get('history', [])  # list of {role, text}
 
         if not user_message:
             return Response({'error': 'No message provided'}, status=status.HTTP_400_BAD_REQUEST)
 
         api_key = os.environ.get("CHATBOT_GEMINI_API_KEY", "AIzaSyCF74MyauncKvzWAt96TIMcPQqdZIUnA5E")
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
 
         try:
-            from google import genai
-            from google.genai import types
+            # Build contents list for multi-turn conversation
+            contents = []
 
-            client = genai.Client(api_key=api_key)
-
-            # Build conversation history for context
-            contents = [types.Content(role="user", parts=[types.Part(text=self.SYSTEM_PROMPT + "\n\nUser: " + user_message)])]
-
-            # Append previous history (last 6 turns for context window efficiency)
-            if history:
-                user_turn = self.SYSTEM_PROMPT + "\n\nUser: " + (history[0]['text'] if history else "")
-                contents = [types.Content(role="user", parts=[types.Part(text=user_turn)])]
-                for turn in history[-6:]:
+            # First turn always starts with the system prompt baked in
+            if not history:
+                contents.append({
+                    "role": "user",
+                    "parts": [{"text": f"{self.SYSTEM_PROMPT}\n\nUser question: {user_message}"}]
+                })
+            else:
+                # Inject system prompt into the very first user turn
+                first_text = history[0].get('text', '') if history else ''
+                contents.append({
+                    "role": "user",
+                    "parts": [{"text": f"{self.SYSTEM_PROMPT}\n\nUser question: {first_text}"}]
+                })
+                # Append remaining history (skip the first since we just added it)
+                for turn in history[1:]:
                     role = "user" if turn.get('role') == 'user' else "model"
-                    contents.append(types.Content(role=role, parts=[types.Part(text=turn['text'])]))
-                contents.append(types.Content(role="user", parts=[types.Part(text=user_message)]))
+                    contents.append({
+                        "role": role,
+                        "parts": [{"text": turn.get('text', '')}]
+                    })
+                # Append the current user message
+                contents.append({
+                    "role": "user",
+                    "parts": [{"text": user_message}]
+                })
 
-            response = client.models.generate_content(
-                model='gemini-2.0-flash',
-                contents=contents,
-                config=types.GenerateContentConfig(
-                    max_output_tokens=500,
-                    temperature=0.7,
+            payload = {
+                "contents": contents,
+                "generationConfig": {
+                    "maxOutputTokens": 500,
+                    "temperature": 0.7
+                }
+            }
+
+            res = requests_lib.post(url, json=payload, timeout=20)
+
+            if res.status_code != 200:
+                error_detail = res.text[:300]
+                print(f"Gemini API error {res.status_code}: {error_detail}")
+                return Response(
+                    {'reply': f"API error ({res.status_code}). Please check the API key or try again."},
+                    status=status.HTTP_200_OK
                 )
-            )
 
-            return Response({'reply': response.text})
+            data = res.json()
+            reply_text = data['candidates'][0]['content']['parts'][0]['text']
+            return Response({'reply': reply_text})
 
         except Exception as e:
-            print(f"Chatbot error: {e}")
+            print(f"ChatbotView exception: {type(e).__name__}: {e}")
             return Response(
-                {'reply': "Sorry, I'm having trouble connecting right now. Please try again shortly!"},
+                {'reply': f"Server error: {type(e).__name__}: {str(e)[:200]}"},
                 status=status.HTTP_200_OK
             )
