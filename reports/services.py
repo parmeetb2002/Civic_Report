@@ -12,8 +12,8 @@ def get_gemini_report(image_file):
     api_key = os.environ.get("GEMINI_API_KEY")
     try:
         genai.configure(api_key=api_key)
-        # Using the absolute most robust stable pointer for the Flash model
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        # Use the most stable available pointer for the Flash model
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         # Read the image bytes if provided
         image_parts = []
@@ -29,28 +29,38 @@ def get_gemini_report(image_file):
                 }
             ]
         
-        prompt = "Analyze this image of a civic issue (pothole, broken light, etc.). Provide a JSON response with keys 'description' (summary) and 'severity' (integer 1-10)."
+        prompt = "Analyze this image of a civic issue (pothole, broken light, garbage, etc.). Provide a JSON response with keys 'description' (short summary) and 'severity' (integer 1-10)."
         
-        # We can enforce JSON mode for cleaner parsing
+        # Enforce JSON mode for cleaner parsing
         generation_config = {
             "response_mime_type": "application/json",
         }
 
-        if image_parts:
-            response = model.generate_content([prompt, image_parts[0]], generation_config=generation_config)
-        else:
-            response = model.generate_content([prompt], generation_config=generation_config)
+        if not image_parts:
+            return {"description": "No image data found.", "severity": 5, "error": "No image data"}
 
-        data = json.loads(response.text)
-        return {
-            "description": data.get("description", "Analyzed successfully."),
-            "severity": int(data.get("severity", 5))
-        }
+        response = model.generate_content([prompt, image_parts[0]], generation_config=generation_config)
+        
+        # Try to parse the JSON response
+        try:
+            data = json.loads(response.text)
+            return {
+                "description": data.get("description", "Analyzed successfully."),
+                "severity": int(data.get("severity", 5))
+            }
+        except Exception as json_err:
+            return {
+                "description": response.text[:200] if response.text else "AI returned non-JSON data.",
+                "severity": 5,
+                "error": str(json_err)
+            }
+
     except Exception as e:
         print(f"Gemini API Error: {e}")
         return {
-            "description": f"AI Processing Error. Please review manually. ({e})",
-            "severity": 5
+            "description": "AI analysis unavailable.",
+            "severity": 5,
+            "error": str(e)
         }
 
 def get_osm_poi_density(lat, lon):

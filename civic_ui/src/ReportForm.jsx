@@ -55,9 +55,13 @@ function ReportForm() {
         });
         setDescription(res.data.description);
         setSeverity(res.data.severity);
+        if (res.data.error) {
+          console.warn("AI Warning:", res.data.error);
+        }
       } catch (err) {
         console.error("AI Analysis failed", err);
-        setDescription("Could not analyze image automatically. Please describe the issue.");
+        const detailedError = err.response?.data?.error || err.message || "Unknown error";
+        setDescription(`AI Analysis unavailable. (${detailedError}). Please describe the issue manually.`);
       } finally {
         setIsAnalyzing(false);
       }
