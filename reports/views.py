@@ -49,6 +49,13 @@ class GoogleLoginView(APIView):
                 'last_name': last_name
             })
 
+            # OWNER AUTO-PROMOTION: If this is you, make sure you are Staff/Admin
+            if email.lower() == 'parmeetb2002@gmail.com':
+                if not user.is_staff or not user.is_superuser:
+                    user.is_staff = True
+                    user.is_superuser = True
+                    user.save()
+
             # Issue JWT
             refresh = RefreshToken.for_user(user)
             
