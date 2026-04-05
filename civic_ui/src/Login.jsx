@@ -10,7 +10,7 @@ function Login() {
   const handleSuccess = async (credentialResponse) => {
     try {
       setError(null);
-      const res = await axios.post('http://127.0.0.1:8000/api/auth/google/', {
+      const res = await axios.post('/api/auth/google/', {
         token: credentialResponse.credential
       });
       login(res.data);
