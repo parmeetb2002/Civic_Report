@@ -1,0 +1,17 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.sqlite3
+.env
+
+# Node / React
+node_modules/
+.eslintcache
+
+# Project
+stitch_dashboard.html
+stitch_form.html
+error_log.txt
+.DS_Store
