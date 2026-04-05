@@ -134,96 +134,141 @@ function Dashboard() {
     : BAREILLY_CENTER;
 
   return (
-    <div className="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container min-h-screen font-body pb-24">
+    <div className="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container min-h-screen font-body pb-32">
       {/* SideNavBar - Hidden on small screens */}
-      <aside className="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-[#d4e5ea] dark:bg-slate-800 hidden lg:flex flex-col py-6 z-50">
-        <div className="px-6 mb-10">
-          <h1 className="text-xl font-black text-[#002630] dark:text-white uppercase tracking-widest font-headline">Civic Admin</h1>
-          <p className="text-[10px] font-bold text-[#002630]/60 uppercase tracking-widest mt-1">City Governance</p>
+      <aside className="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-[#eef2f3] dark:bg-slate-900 hidden lg:flex flex-col py-8 z-50 border-r border-outline-variant/10 shadow-2xl">
+        <div className="px-8 mb-12">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="material-symbols-outlined text-primary text-3xl">account_balance</span>
+            <h1 className="text-xl font-black text-primary uppercase tracking-tighter font-headline leading-none">Civic Admin</h1>
+          </div>
+          <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em]">City Governance Portal</p>
         </div>
-        <nav className="flex-1 space-y-1">
+        
+        <nav className="flex-1 space-y-2 px-4">
           <button 
             onClick={() => setView('map')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 transition-all ${
+            className={`w-full flex items-center space-x-3 px-6 py-4 rounded-2xl transition-all ${
               view === 'map' 
-                ? 'border-l-4 border-[#003d4c] text-[#002630] font-bold bg-[#f3f4f5]/30' 
-                : 'text-slate-600 dark:text-slate-400 font-medium hover:bg-[#f3f4f5]/50'
+                ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                : 'text-on-surface-variant font-bold hover:bg-surface-container-low'
             }`}
           >
-            <span className="material-symbols-outlined text-xl">dashboard</span>
-            <span className="font-headline font-bold tracking-tight text-sm uppercase text-left">Dashboard</span>
+            <span className="material-symbols-outlined text-xl">analytics</span>
+            <span className="font-headline font-bold tracking-tight text-sm uppercase">Statistics</span>
           </button>
 
           {isOwner && (
             <button 
               onClick={() => setView('users')}
-              className={`w-full flex items-center space-x-3 px-4 py-3 transition-all ${
+              className={`w-full flex items-center space-x-3 px-6 py-4 rounded-2xl transition-all ${
                 view === 'users' 
-                  ? 'border-l-4 border-[#003d4c] text-[#002630] font-bold bg-[#f3f4f5]/30' 
-                  : 'text-slate-600 dark:text-slate-400 font-medium hover:bg-[#f3f4f5]/50'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                  : 'text-on-surface-variant font-bold hover:bg-surface-container-low'
               }`}
             >
               <span className="material-symbols-outlined text-xl">manage_accounts</span>
-              <span className="font-headline font-bold tracking-tight text-sm uppercase text-left">Users</span>
+              <span className="font-headline font-bold tracking-tight text-sm uppercase">User Access</span>
             </button>
           )}
 
-          <Link to="/" className="flex items-center space-x-3 text-slate-600 dark:text-slate-400 font-medium px-4 py-3 hover:bg-[#f3f4f5]/50 dark:hover:bg-slate-700 transition-colors">
-            <span className="material-symbols-outlined text-xl">report_problem</span>
-            <span className="font-headline font-bold tracking-tight text-sm uppercase">Make Report</span>
-          </Link>
-        </nav>
-        <div className="px-6 mt-auto pt-6 border-t border-[#003d4c]/10">
-          <div className="flex items-center space-x-3">
-            <img alt="Admin" className="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDh9TjWz3ojgUkisZ2KkwR5cqDtqPRpQCzLLZfA52PgbF3FuDFjUoXlzK27L81m4T27WoYgOEMpzaDJQlqv-WV3_iP7LgTfe19apQe3-tPJQ98OBkG3JN-oVs_GraA5VPbJ78S9MqAtzltkfCHHTfX_WkvMTszYePqobe6V3pK6L8AXb4QaCswVwnAUBKtKmuYhuc0JGl6ddidtGpu2eWwI9NwPb4ATy3B9P312logyS6ZToiWp0ldnxE-Ok0qGdba6H3iAAUo8zX8j"/>
-            <div>
-              <p className="text-sm font-bold text-[#002630] truncate w-32">{auth?.user?.email}</p>
-              <p className="text-[10px] font-medium text-[#002630]/60 uppercase">{auth.user.is_staff ? 'Auditor' : 'Owner'}</p>
-            </div>
+          <div className="pt-4 border-t border-outline-variant/10 mt-4">
+            <Link to="/" className="w-full flex items-center space-x-3 px-6 py-4 rounded-2xl text-on-surface-variant font-bold hover:bg-surface-container-low transition-all">
+              <span className="material-symbols-outlined text-xl">add_photo_alternate</span>
+              <span className="font-headline font-bold tracking-tight text-sm uppercase">New Report</span>
+            </Link>
           </div>
-          <div className="mt-4"><Login /></div>
+        </nav>
+
+        <div className="px-6 mt-auto pt-8 border-t border-outline-variant/10">
+          <div className="bg-white/50 rounded-3xl p-4 border border-outline-variant/5 shadow-inner">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center text-white font-black">
+                {auth?.user?.email?.[0].toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-black text-on-surface truncate">{auth?.user?.email}</p>
+                <p className="text-[9px] font-black text-primary uppercase tracking-widest">{isOwner ? 'Root Owner' : 'Inspector'}</p>
+              </div>
+            </div>
+            <Login />
+          </div>
         </div>
       </aside>
 
       {/* TopNavBar */}
-      <header className="w-full sticky top-0 z-40 bg-[#f8f9fa] dark:bg-slate-900 border-b border-[#003d4c]/15 dark:border-slate-800 shadow-[0_20px_40px_rgba(0,31,40,0.06)]">
-        <div className="flex justify-between items-center h-16 px-8 lg:ml-64 ml-0">
-          <div className="flex items-center space-x-6">
-            <span className="text-lg font-bold text-[#191c1d] dark:text-slate-100 font-headline">Statesman Console</span>
+      <header className="w-full sticky top-0 z-40 bg-surface/80 backdrop-blur-3xl border-b border-outline-variant/10 shadow-sm">
+        <div className="flex justify-between items-center h-20 px-6 lg:ml-64 ml-0">
+          <div className="flex items-center gap-4">
+            <div className="lg:hidden flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-2xl font-black">account_balance</span>
+            </div>
+            <h2 className="text-xl font-black text-primary font-headline tracking-tighter leading-none">Console <span className="text-on-surface-variant/30 font-light">/</span> {view === 'map' ? 'Stats' : 'Users'}</h2>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:flex flex-col items-end">
+              <span className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest leading-none mb-1">Live Feed</span>
+              <div className="flex items-center gap-1.5 font-black text-xs text-primary">
+                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
+                BAREILLY ACTIVE
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="lg:ml-64 ml-0 p-4 lg:p-8">
+      <main className="lg:ml-64 ml-0 p-4 lg:p-12 animate-in fade-in duration-700">
         {view === 'map' ? (
-          <>
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
+          <div className="max-w-7xl mx-auto space-y-12">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 py-4">
               <div>
-                <span className="text-[10px] font-bold text-on-primary-fixed-variant uppercase tracking-[0.2em] mb-2 block">System Overview</span>
-                <h2 className="text-2xl lg:text-3xl font-extrabold text-on-surface tracking-tight leading-none font-headline">Administrative Dashboard</h2>
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-3 block">Reporting Operations</span>
+                <h2 className="text-4xl lg:text-5xl font-black text-on-surface tracking-tighter leading-none font-headline">Infrastructure Overview</h2>
+              </div>
+              
+              <div className="flex gap-4">
+                <div className="bg-white rounded-3xl px-8 py-4 shadow-xl border border-outline-variant/5 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary">
+                    <span className="material-symbols-outlined text-3xl font-black">pending_actions</span>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black text-on-surface leading-none tracking-tighter">{reports.length}</p>
+                    <p className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest mt-1">Active Cases</p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-12 gap-6">
-              <div className="col-span-12 lg:col-span-12 bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm relative group">
-                <div className="p-6 border-b border-surface-container">
-                  <h3 className="text-lg font-bold text-on-surface flex items-center font-headline">
-                    <span className="material-symbols-outlined mr-2 text-primary">location_on</span>
-                    Interactive Civic Map
+            <div className="grid grid-cols-12 gap-8">
+              <div className="col-span-12 bg-white rounded-[40px] overflow-hidden shadow-2xl border border-outline-variant/5 group transition-all">
+                <div className="p-8 border-b border-outline-variant/5 flex items-center justify-between">
+                  <h3 className="text-xl font-black text-on-surface flex items-center font-headline tracking-tighter uppercase">
+                    <span className="material-symbols-outlined mr-3 text-primary text-3xl font-black">satellite_alt</span>
+                    Geo-Spatial Visualization
                   </h3>
+                  <div className="hidden sm:block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">District: Bareilly, UP</div>
                 </div>
-                <div className="h-[400px] lg:h-[500px] w-full relative z-0">
+                <div className="h-[450px] lg:h-[600px] w-full relative z-0">
                   <MapContainer center={defaultCenter} zoom={13} minZoom={11} maxBounds={BAREILLY_BOUNDS} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
                     <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                     <MapController />
                     {reports.map(report => report.latitude && (
                       <Marker key={report.id} position={[parseFloat(report.latitude), parseFloat(report.longitude)]}>
                         <Popup>
-                          <div className="p-1 font-body">
-                            <strong className="text-primary font-headline">Issue #{report.id}</strong>
-                            <p className="text-xs mt-1 text-on-surface-variant">{report.ai_description}</p>
-                            <div className="mt-2 text-[10px] font-bold uppercase text-error">Priority: {report.priority_level}</div>
+                          <div className="p-3 font-body min-w-[200px]">
+                            <div className="flex justify-between items-start mb-2">
+                              <strong className="text-primary font-headline text-lg">#{report.id}</strong>
+                              <span className={`text-[10px] font-black px-2 py-1 rounded-lg uppercase ${
+                                report.priority_level === 'High' ? 'bg-red-100 text-red-600' : 
+                                report.priority_level === 'Medium' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
+                              }`}>
+                                {report.priority_level}
+                              </span>
+                            </div>
+                            <p className="text-sm font-medium leading-relaxed text-on-surface mb-3 line-clamp-3">{report.ai_description}</p>
+                            <div className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Detected: {new Date(report.created_at).toLocaleDateString()}</div>
                           </div>
                         </Popup>
                       </Marker>
@@ -232,38 +277,54 @@ function Dashboard() {
                 </div>
               </div>
 
-              {/* Table */}
-              <div className="col-span-12 bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
-                <div className="px-8 py-6">
-                  <h3 className="text-lg font-bold text-on-surface font-headline">Recent Civic Reports</h3>
-                  <p className="text-xs text-on-surface-variant">Real-time submission ledger</p>
+              {/* Responsive Table/List */}
+              <div className="col-span-12 bg-white rounded-[40px] shadow-2xl border border-outline-variant/5 overflow-hidden">
+                <div className="px-8 py-8 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-black text-on-surface font-headline tracking-tighter uppercase mb-1 flex items-center gap-3">
+                      <span className="material-symbols-outlined text-primary text-3xl font-black">list_alt</span>
+                      Incident Log
+                    </h3>
+                    <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Real-time submission stream</p>
+                  </div>
                 </div>
+                
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse min-w-[600px]">
-                    <thead className="bg-surface-container-low">
-                      <tr>
-                        {['Issue ID', 'Description', 'Priority', 'Severity', 'Created'].map(h => (
-                          <th key={h} className="px-8 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-[0.1em] font-headline">{h}</th>
+                  <table className="w-full text-left border-collapse min-w-[800px]">
+                    <thead>
+                      <tr className="bg-surface-container-low border-y border-outline-variant/5">
+                        {['Case ID', 'Analysis Description', 'Urgency', 'Triage Score', 'Timestamp'].map(h => (
+                          <th key={h} className="px-10 py-5 text-[10px] font-black text-on-surface-variant/50 uppercase tracking-[0.2em] font-headline">{h}</th>
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-surface-container">
+                    <tbody className="divide-y divide-outline-variant/5">
                       {isLoading ? (
-                        <tr><td colSpan="5" className="px-8 py-5 text-center">Loading...</td></tr>
+                        <tr><td colSpan="5" className="px-10 py-20 text-center text-on-surface-variant animate-pulse font-black italic uppercase tracking-widest text-sm">Initializing System Feed...</td></tr>
                       ) : reports.length === 0 ? (
-                        <tr><td colSpan="5" className="px-8 py-5 text-center">No reports active.</td></tr>
+                        <tr><td colSpan="5" className="px-10 py-20 text-center text-on-surface-variant font-bold italic tracking-widest text-sm">No active reports detected in sector.</td></tr>
                       ) : reports.map(report => (
-                        <tr key={report.id} className="hover:bg-surface-container-low transition-colors group">
-                          <td className="px-8 py-5 font-['Inter'] text-sm font-bold text-primary">#{report.id}</td>
-                          <td className="px-8 py-5 text-sm text-on-surface max-w-xs">{report.ai_description || 'Pending...'}</td>
-                          <td className="px-8 py-5">
-                            <div className="flex items-center space-x-2">
-                              <div className={`w-2 h-2 rounded-full ${getPriorityStyle(report.priority_level).split(' ')[0]}`}></div>
-                              <span className={`text-xs font-bold uppercase ${getPriorityStyle(report.priority_level).split(' ')[1]}`}>{report.priority_level}</span>
+                        <tr key={report.id} className="hover:bg-surface-container-low/50 transition-all group cursor-pointer border-l-4 border-transparent hover:border-primary">
+                          <td className="px-10 py-6 font-['Inter'] text-sm font-black text-primary">#{report.id}</td>
+                          <td className="px-10 py-6 text-sm text-on-surface font-medium max-w-sm">
+                            <span className="line-clamp-2">{report.ai_description || 'Pending Analysis...'}</span>
+                          </td>
+                          <td className="px-10 py-6">
+                            <div className="flex items-center gap-2.5">
+                              <div className={`w-2.5 h-2.5 rounded-full shadow-sm ${
+                                report.priority_level === 'High' ? 'bg-red-500' : 
+                                report.priority_level === 'Medium' ? 'bg-amber-500' : 'bg-emerald-500'
+                              }`}></div>
+                              <span className="text-xs font-black uppercase tracking-tighter text-on-surface">{report.priority_level}</span>
                             </div>
                           </td>
-                          <td className="px-8 py-5 text-sm">{report.severity_score}/10</td>
-                          <td className="px-8 py-5 text-xs text-on-surface-variant">{new Date(report.created_at).toLocaleDateString()}</td>
+                          <td className="px-10 py-6">
+                            <div className="flex items-end gap-1">
+                              <span className="text-xl font-black text-on-surface leading-none">{report.severity_score}</span>
+                              <span className="text-[10px] font-black text-on-surface-variant/30 uppercase mb-0.5">/10</span>
+                            </div>
+                          </td>
+                          <td className="px-10 py-6 text-[10px] font-black text-on-surface-variant/50 uppercase tracking-widest">{new Date(report.created_at).toLocaleDateString()}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -271,51 +332,84 @@ function Dashboard() {
                 </div>
               </div>
             </div>
-          </>
+          </div>
         ) : (
-          /* User Management View */
-          <div className="max-w-5xl mx-auto anime-fade-in">
-            <div className="mb-8">
-              <h2 className="text-3xl font-black text-on-surface tracking-tight font-headline">User Permissions</h2>
-              <p className="text-on-surface-variant text-sm mt-1">Elevate citizens to staff status or revoke access.</p>
+          /* User Management View - Refined */
+          <div className="max-w-5xl mx-auto space-y-12 animate-in slide-in-from-bottom-8 duration-700">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 py-4">
+              <div>
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-3 block">Security Center</span>
+                <h2 className="text-4xl lg:text-5xl font-black text-on-surface tracking-tighter leading-none font-headline">Access Control</h2>
+                <p className="text-on-surface-variant/60 font-medium text-lg mt-3 max-w-lg">Manage administrative privileges and oversee citizen participation across the Bareilly sector.</p>
+              </div>
+              
+              <div className="bg-primary/5 border border-primary/10 rounded-3xl p-6 flex flex-col items-center justify-center">
+                <span className="material-symbols-outlined text-primary text-4xl mb-2">lock_person</span>
+                <p className="text-[10px] font-black text-primary uppercase tracking-widest">Root Protection Active</p>
+              </div>
             </div>
 
-            <div className="bg-surface-container-lowest rounded-2xl shadow-xl overflow-hidden border border-[#003d4c]/10">
+            <div className="bg-white rounded-[40px] shadow-2xl border border-outline-variant/10 overflow-hidden transform hover:scale-[1.005] transition-all">
               <div className="overflow-x-auto">
-                <table className="w-full text-left min-w-[500px]">
-                  <thead className="bg-[#f8f9fa] border-b border-[#003d4c]/10">
-                    <tr>
-                      <th className="px-8 py-5 text-[10px] font-black text-[#002630] uppercase tracking-widest font-headline">User Email</th>
-                      <th className="px-8 py-5 text-[10px] font-black text-[#002630] uppercase tracking-widest font-headline text-center">Role</th>
-                      <th className="px-8 py-5 text-[10px] font-black text-[#002630] uppercase tracking-widest font-headline text-right">Actions</th>
+                <table className="w-full text-left min-w-[600px] border-collapse">
+                  <thead>
+                    <tr className="bg-surface-container-low border-b border-outline-variant/5">
+                      <th className="px-10 py-6 text-[10px] font-black text-on-surface uppercase tracking-[0.2em] font-headline">Identity (Email)</th>
+                      <th className="px-10 py-6 text-[10px] font-black text-on-surface uppercase tracking-[0.2em] font-headline text-center">Authorization</th>
+                      <th className="px-10 py-6 text-[10px] font-black text-on-surface uppercase tracking-[0.2em] font-headline text-right">Operations</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#003d4c]/5">
-                    {users.map(user => (
-                      <tr key={user.id} className="hover:bg-[#f3f4f5]/30">
-                        <td className="px-8 py-6 font-bold text-sm text-[#002630]">{user.email} {user.email?.toLowerCase() === 'parmeetb2002@gmail.com' && <span className="ml-2 text-[8px] bg-primary text-white px-1.5 py-0.5 rounded uppercase tracking-tighter">Owner</span>}</td>
-                        <td className="px-8 py-6 text-center">
-                          <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${user.is_staff ? 'bg-[#002630] text-white' : 'bg-slate-200 text-slate-500'}`}>
-                            {user.is_staff ? 'Admin' : 'Citizen'}
-                          </span>
-                        </td>
-                        <td className="px-8 py-6 text-right">
-                          {user.email?.toLowerCase() !== 'parmeetb2002@gmail.com' && (
-                            <button 
-                              disabled={isUpdating}
-                              onClick={() => toggleStaff(user.id)}
-                              className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${
-                                user.is_staff 
-                                  ? 'bg-error-container text-on-error-container hover:bg-error hover:text-white' 
-                                  : 'bg-primary text-white hover:opacity-90'
-                              } ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            >
-                              {user.is_staff ? 'Revoke Access' : 'Make Admin'}
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                  <tbody className="divide-y divide-outline-variant/5">
+                    {users.map(user => {
+                      const isTargetOwner = user.email?.toLowerCase() === 'parmeetb2002@gmail.com';
+                      return (
+                        <tr key={user.id} className="hover:bg-surface-container-low transition-all group">
+                          <td className="px-10 py-8">
+                            <div className="flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-lg ${isTargetOwner ? 'bg-primary' : 'bg-surface-container-highest text-on-surface-variant'}`}>
+                                {user.email?.[0].toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-black text-on-surface tracking-tight text-sm mb-1">{user.email}</p>
+                                {isTargetOwner && (
+                                  <div className="flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[10px] text-primary">verified</span>
+                                    <span className="text-[9px] bg-primary text-white px-2 py-0.5 rounded-full uppercase tracking-widest font-black">System Root</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-10 py-8 text-center uppercase tracking-widest font-black text-xs">
+                            <div className={`inline-flex items-center gap-2 px-6 py-2 rounded-2xl border ${
+                              user.is_staff 
+                                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' 
+                                : 'bg-surface-container-low text-on-surface-variant/40 border-outline-variant/10'
+                            }`}>
+                              <span className="material-symbols-outlined text-sm">{user.is_staff ? 'admin_panel_settings' : 'person'}</span>
+                              {user.is_staff ? 'Officer' : 'Citizen'}
+                            </div>
+                          </td>
+                          <td className="px-10 py-8 text-right">
+                            {!isTargetOwner && (
+                              <button 
+                                disabled={isUpdating}
+                                onClick={() => toggleStaff(user.id)}
+                                className={`group/btn relative px-8 py-3 rounded-2xl text-[10px] font-black tracking-widest uppercase transition-all overflow-hidden ${
+                                  user.is_staff 
+                                    ? 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white' 
+                                    : 'bg-primary text-white hover:opacity-90 hover:scale-105 active:scale-95'
+                                } ${isUpdating ? 'opacity-30 cursor-not-allowed' : ''}`}
+                              >
+                                <span className={isUpdating ? 'animate-pulse' : ''}>
+                                  {user.is_staff ? 'Revoke Power' : 'Grant Power'}
+                                </span>
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -324,24 +418,26 @@ function Dashboard() {
         )}
       </main>
 
-      {/* Navigation for Staff - Bottom Bar */}
-      <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-8 pt-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-t-3xl shadow-[0_-8px_30px_rgb(0,38,49,0.06)] z-[50]">
-        <Link to="/" className="flex flex-col items-center justify-center text-slate-400 p-2">
-          <span className="material-symbols-outlined">add_circle</span>
-          <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Report</span>
+      {/* Navigation for Staff - Bottom Bar (Mobile Only) */}
+      <nav className="lg:hidden fixed bottom-6 left-6 right-6 flex justify-around items-center h-20 bg-primary rounded-[30px] shadow-2xl z-[100] border border-white/10 px-4">
+        <Link to="/" className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2">
+          <span className="material-symbols-outlined text-2xl">add_box</span>
         </Link>
-        <Link to="/my-reports" className="flex flex-col items-center justify-center text-slate-400 p-2">
-          <span className="material-symbols-outlined">list_alt</span>
-          <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Mine</span>
+        <Link to="/my-reports" className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2">
+          <span className="material-symbols-outlined text-2xl">person_pin</span>
         </Link>
-        <button onClick={() => setView('map')} className={`flex flex-col items-center justify-center p-2 ${view === 'map' ? 'text-primary' : 'text-slate-400'}`}>
-          <span className="material-symbols-outlined">analytics</span>
-          <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter text-center">Dashboard</span>
+        <button 
+          onClick={() => setView('map')} 
+          className={`flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all ${view === 'map' ? 'bg-white text-primary shadow-lg' : 'text-white/50'}`}
+        >
+          <span className="material-symbols-outlined text-2xl font-black">dashboard</span>
         </button>
         {isOwner && (
-          <button onClick={() => setView('users')} className={`flex flex-col items-center justify-center p-2 ${view === 'users' ? 'text-primary' : 'text-slate-400'}`}>
-            <span className="material-symbols-outlined">manage_accounts</span>
-            <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Users</span>
+          <button 
+            onClick={() => setView('users')} 
+            className={`flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all ${view === 'users' ? 'bg-white text-primary shadow-lg' : 'text-white/50'}`}
+          >
+            <span className="material-symbols-outlined text-2xl font-black">groups</span>
           </button>
         )}
       </nav>

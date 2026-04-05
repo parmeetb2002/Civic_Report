@@ -14,6 +14,17 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// Helper component to fix the "Grey Tiles" issue by forcing a resize recalculation
+function MapController() {
+  const map = useMap();
+  useEffect(() => {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+  }, [map]);
+  return null;
+}
+
 function MapUpdater({ center }) {
   const map = useMap();
   useEffect(() => {
@@ -139,15 +150,15 @@ function ReportForm() {
 
   if (!auth?.user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-surface px-6 text-center space-y-6">
-        <div className="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center text-primary shadow-inner">
-          <span className="material-symbols-outlined text-4xl">lock</span>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-surface px-6 text-center space-y-8 animate-in fade-in duration-700">
+        <div className="w-24 h-24 rounded-[32px] bg-primary flex items-center justify-center text-white shadow-2xl rotate-3">
+          <span className="material-symbols-outlined text-5xl font-black">lock</span>
         </div>
         <div>
-          <h2 className="text-2xl font-black text-on-surface font-headline">Authentication Required</h2>
-          <p className="text-on-surface-variant mt-2 max-w-xs mx-auto">Please sign in with your Google account to help Bareilly stay safe and beautiful.</p>
+          <h2 className="text-3xl font-black text-on-surface font-headline tracking-tighter">Sign In Required</h2>
+          <p className="text-on-surface-variant mt-3 max-w-xs mx-auto font-medium">Please authenticate to help the Bareilly Administration keep our city infrastructure robust.</p>
         </div>
-        <div className="bg-white p-4 rounded-2xl shadow-xl border border-outline-variant/30">
+        <div className="bg-white p-6 rounded-[32px] shadow-2xl border border-outline-variant/10">
           <Login />
         </div>
       </div>
@@ -158,40 +169,50 @@ function ReportForm() {
   const showAdminLink = auth?.user?.is_staff || isOwner;
 
   return (
-    <div className="bg-surface text-on-surface min-h-screen pb-32">
-      <header className="px-6 pt-10 pb-4 flex items-center justify-between">
+    <div className="bg-surface text-on-surface min-h-screen pb-32 selection:bg-primary/10">
+      <header className="px-6 pt-12 pb-8 flex items-center justify-between max-w-2xl mx-auto">
         <div>
-          <h1 className="text-3xl font-black tracking-tighter text-primary">Bareilly Civic</h1>
-          <p className="text-on-surface-variant text-sm font-bold uppercase tracking-widest">Report Infrastructure Issues</p>
+          <h1 className="text-4xl font-black tracking-tighter text-primary leading-none mb-1">Bareilly Civic</h1>
+          <p className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-[0.2em]">Infrastructure Audit Unit</p>
         </div>
         {showAdminLink && (
-          <Link to="/dashboard" className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-primary shadow-sm">
-            <span className="material-symbols-outlined">analytics</span>
+          <Link to="/dashboard" className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg active:scale-90 transition-transform">
+            <span className="material-symbols-outlined text-2xl font-black">dashboard</span>
           </Link>
         )}
       </header>
 
-      <main className="max-w-2xl mx-auto px-6 space-y-8">
+      <main className="max-w-2xl mx-auto px-6 space-y-10">
         
         {statusMsg && (
-          <div className="bg-primary/10 text-primary border border-primary/20 p-4 rounded-2xl font-bold flex items-center gap-3 animate-pulse">
-            <span className="material-symbols-outlined">check_circle</span>
+          <div className="bg-primary text-white p-5 rounded-[24px] font-black text-sm flex items-center gap-4 shadow-xl animate-in slide-in-from-top-4 duration-500">
+            <span className="material-symbols-outlined text-2xl">verified</span>
             {statusMsg}
           </div>
         )}
 
-        <section>
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-primary font-black text-xs tracking-[0.2em] uppercase">Visual Evidence</h2>
+          </div>
           <div className="relative group" onClick={() => document.getElementById('fileInput').click()}>
-            <div className="aspect-[4/3] w-full rounded-3xl bg-surface-container-lowest flex flex-col items-center justify-center border-4 border-dashed border-outline-variant/40 overflow-hidden cursor-pointer hover:bg-surface-container-low transition-colors shadow-inner">
+            <div className="aspect-square sm:aspect-[16/9] w-full rounded-[40px] bg-white flex flex-col items-center justify-center border-4 border-dashed border-outline-variant/20 overflow-hidden cursor-pointer hover:bg-surface-container-low transition-all shadow-2xl group-active:scale-[0.98]">
               {imageFile ? (
-                <img className="absolute inset-0 w-full h-full object-cover" alt="Selected issue" src={URL.createObjectURL(imageFile)} />
-              ) : (
-                <div className="relative z-10 flex flex-col items-center animate-bounce">
-                  <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary">
-                    <span className="material-symbols-outlined text-4xl">photo_camera</span>
+                <>
+                  <img className="absolute inset-0 w-full h-full object-cover" alt="Selected issue" src={URL.createObjectURL(imageFile)} />
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="text-white font-black uppercase tracking-widest text-xs bg-black/40 px-4 py-2 rounded-full backdrop-blur-md">Change Photo</span>
                   </div>
-                  <p className="text-on-surface-variant font-black uppercase tracking-tighter">Capture Issue</p>
-                  <p className="text-on-surface-variant/60 text-xs mt-1">Tap to capture live photo</p>
+                </>
+              ) : (
+                <div className="relative z-10 flex flex-col items-center space-y-4">
+                  <div className="w-20 h-20 rounded-[30px] bg-primary/5 flex items-center justify-center text-primary">
+                    <span className="material-symbols-outlined text-4xl font-black">photo_camera</span>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-on-surface font-black uppercase tracking-tighter text-lg">Tap to Capture</p>
+                    <p className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-widest mt-1">Live Evidence Submission</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -206,23 +227,23 @@ function ReportForm() {
         </section>
 
         {(imageFile || isAnalyzing) && (
-          <section className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-primary font-black text-xl tracking-tighter uppercase">AI Review</h2>
-              {isAnalyzing && <span className="text-xs font-bold text-primary animate-pulse">Processing with AI...</span>}
+          <section className="space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <div className="flex items-center justify-between px-2">
+              <h2 className="text-primary font-black text-xs tracking-[0.2em] uppercase">AI Triage Analysis</h2>
+              {isAnalyzing && <span className="text-[10px] font-black text-primary animate-pulse uppercase tracking-widest">Processing...</span>}
             </div>
-            <div className="bg-surface-container-highest rounded-3xl p-6 shadow-md border border-outline-variant/20">
+            <div className="bg-white rounded-[32px] p-6 shadow-2xl border border-outline-variant/5">
               {isAnalyzing ? (
-                <div className="flex flex-col items-center py-4 space-y-3">
-                  <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-                  <p className="text-sm font-medium text-on-surface-variant">Gemini is describing the issue...</p>
+                <div className="flex flex-col items-center py-8 space-y-4">
+                  <div className="w-12 h-12 border-4 border-primary/10 border-t-primary rounded-full animate-spin"></div>
+                  <p className="text-xs font-black text-on-surface-variant/60 uppercase tracking-widest">Gemini is auditing payload...</p>
                 </div>
               ) : (
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-transparent border-none text-on-surface font-medium text-sm leading-relaxed focus:ring-0 p-0"
-                  placeholder="Review AI description here..."
+                  className="w-full bg-transparent border-none text-on-surface font-bold text-lg leading-tight focus:ring-0 p-0 placeholder:text-on-surface-variant/20"
+                  placeholder="Reviewing AI metadata..."
                   rows={4}
                 />
               )}
@@ -230,23 +251,25 @@ function ReportForm() {
           </section>
         )}
 
-        <section className="space-y-4">
-          <h2 className="text-primary font-black text-xl tracking-tighter uppercase">Incident Location</h2>
-          <div onClick={handleDetectLocation} className="bg-surface-container-low rounded-3xl p-6 flex items-center justify-between group cursor-pointer hover:bg-surface-container transition-all shadow-sm border border-outline-variant/10">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-on-primary shadow-lg group-active:scale-90 transition-transform">
-                <span className="material-symbols-outlined text-3xl">location_on</span>
+        <section className="space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-primary font-black text-xs tracking-[0.2em] uppercase">Location Context</h2>
+          </div>
+          <div onClick={handleDetectLocation} className="bg-white rounded-[32px] p-6 flex items-center justify-between group cursor-pointer hover:bg-surface-container-low transition-all shadow-xl border border-outline-variant/5">
+            <div className="flex items-center gap-5">
+              <div className="w-16 h-16 rounded-[24px] bg-primary flex items-center justify-center text-white shadow-lg group-active:scale-90 transition-transform">
+                <span className="material-symbols-outlined text-3xl font-black">my_location</span>
               </div>
-              <div>
-                <p className="font-black text-on-surface tracking-tight uppercase text-lg leading-none">Detect Location</p>
-                <p className="text-on-surface-variant text-sm font-medium mt-1">
-                  {location.lat ? `Bareilly: ${location.lat}, ${location.lon}` : 'Click to pinpoint coordinates'}
+              <div className="min-w-0">
+                <p className="font-black text-on-surface tracking-tighter uppercase text-xl leading-none mb-1">Detect GPS</p>
+                <p className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-widest truncate">
+                  {location.lat ? `${location.lat}, ${location.lon}` : 'Sector Coordinate Lock'}
                 </p>
               </div>
             </div>
-            <span className="material-symbols-outlined text-outline text-3xl">gps_fixed</span>
+            <span className="material-symbols-outlined text-primary text-3xl font-black opacity-20 group-hover:opacity-100 transition-opacity">gps_fixed</span>
           </div>
-          <div className="w-full h-56 rounded-3xl overflow-hidden relative shadow-lg border-4 border-white z-0">
+          <div className="w-full h-64 rounded-[40px] overflow-hidden relative shadow-2xl border-4 border-white z-0 transform hover:scale-[1.01] transition-transform">
             <MapContainer 
               center={[location.lat, location.lon]} 
               zoom={13} 
@@ -256,12 +279,14 @@ function ReportForm() {
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
+              <MapController />
               {hasDetected && <Marker position={[location.lat, location.lon]} />}
               <MapUpdater center={hasDetected ? [location.lat, location.lon] : null} />
             </MapContainer>
           </div>
         </section>
       </main>
+
 
       <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center px-10 pb-8 pt-4 bg-white/80 backdrop-blur-xl rounded-t-[40px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50">
         <button onClick={handleDiscard} className="flex flex-col items-center justify-center text-slate-400 hover:text-red-500 transition-colors">

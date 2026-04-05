@@ -46,71 +46,78 @@ function MyReports() {
   }
 
   return (
-    <div className="bg-surface min-h-screen text-on-surface pb-20">
-      <header className="px-6 pt-12 pb-6 flex items-center justify-between">
+    <div className="bg-surface min-h-screen text-on-surface pb-32 selection:bg-primary/10">
+      <header className="px-6 pt-12 pb-8 flex items-center justify-between max-w-2xl mx-auto">
         <div>
-          <h1 className="text-3xl font-black tracking-tighter text-primary">My Reports</h1>
-          <p className="text-on-surface-variant text-sm font-medium">Tracking your impact on Bareilly</p>
+          <h1 className="text-4xl font-black tracking-tighter text-primary leading-none mb-1">Citizen Feed</h1>
+          <p className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-[0.2em]">Your Civic Contributions</p>
         </div>
-        <Link to="/" className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
-          <span className="material-symbols-outlined">add</span>
+        <Link to="/" className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-primary shadow-xl border border-outline-variant/10 active:scale-90 transition-transform">
+          <span className="material-symbols-outlined text-2xl font-black">add</span>
         </Link>
       </header>
 
-      <main className="px-6 space-y-4">
+      <main className="max-w-2xl mx-auto px-6 space-y-6">
         {isLoading ? (
-          <div className="flex justify-center py-20">
-            <span className="material-symbols-outlined animate-spin text-4xl text-primary/30">refresh</span>
+          <div className="flex flex-col items-center justify-center py-24 space-y-4">
+            <div className="w-12 h-12 border-4 border-primary/10 border-t-primary rounded-full animate-spin"></div>
+            <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Accessing Ledger...</p>
           </div>
         ) : reports.length === 0 ? (
-          <div className="bg-surface-container-low rounded-3xl p-10 text-center space-y-4 border border-outline-variant/20">
-            <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mx-auto text-outline">
-              <span className="material-symbols-outlined text-3xl">assignment_late</span>
+          <div className="bg-white rounded-[40px] p-12 text-center space-y-6 border border-outline-variant/10 shadow-2xl animate-in zoom-in-95 duration-700">
+            <div className="w-20 h-20 rounded-[30px] bg-surface-container flex items-center justify-center mx-auto text-on-surface-variant/20">
+              <span className="material-symbols-outlined text-5xl font-black">inventory_2</span>
             </div>
-            <p className="text-on-surface-variant font-medium">You haven't submitted any reports yet.</p>
-            <Link to="/" className="inline-block bg-primary text-on-primary px-6 py-2 rounded-full font-bold text-sm shadow-lg">New Report</Link>
+            <div>
+              <p className="text-on-surface font-black text-xl tracking-tighter">No Active Reports</p>
+              <p className="text-on-surface-variant/60 text-sm mt-1 font-medium">Your contribution history is currently empty.</p>
+            </div>
+            <Link to="/" className="inline-block bg-primary text-white px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-transform">Start Reporting</Link>
           </div>
         ) : (
-          reports.map(report => (
-            <div key={report.id} className="bg-white rounded-2xl p-4 shadow-sm border border-outline-variant/10 flex gap-4 items-center">
-              <div className="w-20 h-20 rounded-xl overflow-hidden bg-surface-container flex-shrink-0">
-                <img src={report.image} alt="Report" className="w-full h-full object-cover" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded ${
-                    report.status === 'Resolved' ? 'bg-green-100 text-green-700' : 
-                    report.status === 'In Progress' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'
-                  }`}>
-                    {report.status}
-                  </span>
-                  <span className="text-xs text-on-surface-variant/60">{new Date(report.created_at).toLocaleDateString()}</span>
+          <div className="space-y-4">
+            {reports.map((report, idx) => (
+              <div 
+                key={report.id} 
+                className="bg-white rounded-[32px] p-5 shadow-xl border border-outline-variant/5 flex gap-5 items-center group hover:bg-surface-container-low transition-all animate-in slide-in-from-bottom-8 duration-700"
+                style={{ animationDelay: `${idx * 100}ms` }}
+              >
+                <div className="w-24 h-24 rounded-2xl overflow-hidden bg-surface-container flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-500">
+                  <img src={report.image} alt="Incident" className="w-full h-full object-cover" />
                 </div>
-                <h3 className="font-bold text-on-surface truncate mt-1">Issue #{report.id}</h3>
-                <p className="text-sm text-on-surface-variant line-clamp-1 truncate">{report.ai_description}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`text-[9px] uppercase font-black px-3 py-1 rounded-full tracking-widest shadow-sm ${
+                      report.status === 'Resolved' ? 'bg-emerald-500 text-white' : 
+                      report.status === 'In Progress' ? 'bg-amber-500 text-white' : 'bg-primary text-white'
+                    }`}>
+                      {report.status}
+                    </span>
+                    <span className="text-[10px] font-black text-on-surface-variant/30 uppercase tracking-tighter">{new Date(report.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <h3 className="font-black text-on-surface text-lg tracking-tighter leading-none mb-1">Incident #{report.id}</h3>
+                  <p className="text-sm text-on-surface-variant font-medium line-clamp-1 truncate opacity-60">{report.ai_description}</p>
+                </div>
+                <div className="flex flex-col items-center justify-center bg-primary/5 rounded-2xl px-3 py-4 min-w-[60px]">
+                  <span className="text-[8px] font-black text-primary uppercase tracking-widest mb-1">Score</span>
+                  <span className="text-2xl font-black text-primary leading-none">{report.severity_score}</span>
+                </div>
               </div>
-              <div className="flex flex-col items-center justify-center pr-2">
-                <div className="text-xs font-black text-primary mb-1">TRIAGE</div>
-                <div className="text-lg font-black text-on-surface">{report.severity_score}</div>
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </main>
 
-      <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-8 pt-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-t-3xl shadow-[0_-8px_30px_rgb(0,38,49,0.06)] z-50">
-        <Link to="/" className="flex flex-col items-center justify-center text-slate-400 p-2">
-          <span className="material-symbols-outlined">add_circle</span>
-          <span className="text-[10px] font-bold mt-1">Report</span>
+      <nav className="fixed bottom-6 left-6 right-6 flex justify-around items-center h-20 bg-primary rounded-[30px] shadow-2xl z-[100] border border-white/10 px-4 max-w-2xl mx-auto">
+        <Link to="/" className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-colors">
+          <span className="material-symbols-outlined text-2xl">add_box</span>
         </Link>
-        <Link to="/my-reports" className="flex flex-col items-center justify-center text-primary p-2">
-          <span className="material-symbols-outlined">list_alt</span>
-          <span className="text-[10px] font-bold mt-1">My Reports</span>
+        <Link to="/my-reports" className="flex flex-col items-center justify-center text-white p-4 bg-white/10 rounded-2xl transition-all">
+          <span className="material-symbols-outlined text-2xl font-black">person_pin</span>
         </Link>
         {auth?.user?.is_staff && (
-          <Link to="/dashboard" className="flex flex-col items-center justify-center text-slate-400 p-2">
-            <span className="material-symbols-outlined">analytics</span>
-            <span className="text-[10px] font-bold mt-1">Admin</span>
+          <Link to="/dashboard" className="flex flex-col items-center justify-center text-white/50 hover:text-white p-2 transition-colors">
+            <span className="material-symbols-outlined text-2xl">dashboard</span>
           </Link>
         )}
       </nav>
